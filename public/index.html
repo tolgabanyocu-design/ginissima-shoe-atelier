@@ -464,7 +464,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 // ══════════════════════════════════════════════════════════════
 // CONFIG — Replace this URL with your published Google Sheet CSV
 // ══════════════════════════════════════════════════════════════
-const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1R3FtDrbm7nVj1tBYl2yf9ipzZAFlv3aMXPHj1QBBmE0/export?format=csv&gid=0';
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpfLOz6RyKNvmjtFIPz8H2P6I472_gT41yBIkrHbm1c9iP5EPAhN2EuYYGO5TYiXWQ-TGxdlBTZ8K1/pub?gid=2019604232&single=true&output=csv';
 
 // Full product catalog - 96 products from Ginissima
 const SAMPLE_PRODUCTS = [
@@ -692,9 +692,25 @@ async function loadApiKeyFromServer() {
 }
 
 async function loadProducts() {
-  // Use embedded data (Google Sheets disabled due to CORS/redirect issues)
+  // Try Google Sheets first
+  try {
+    console.log('Fetching from Google Sheets...');
+    const resp = await fetch(SHEET_CSV_URL);
+    if (resp.ok) {
+      const csv = await resp.text();
+      const parsed = parseCSV(csv);
+      if (parsed.length > 0) {
+        products = parsed;
+        console.log(`Loaded ${products.length} products from Google Sheets`);
+        return;
+      }
+    }
+  } catch (err) {
+    console.log('Google Sheets fetch failed:', err);
+  }
+  // Fallback to embedded data
   products = SAMPLE_PRODUCTS;
-  console.log(`Loaded ${products.length} products`);
+  console.log(`Loaded ${products.length} embedded products (fallback)`);
 }
 
 function parseCSV(csv) {
