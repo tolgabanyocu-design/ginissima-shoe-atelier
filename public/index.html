@@ -223,6 +223,28 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .occ-card .emoji { font-size: 22px; }
 .occ-card .label { font-size: 11px; font-weight: 500; letter-spacing: .04em; }
 
+/* Mode Toggle */
+.mode-toggle-section { margin-bottom: 24px; }
+.mode-toggle { display: flex; flex-direction: column; gap: 10px; }
+.mode-btn {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 18px; border-radius: 12px;
+  border: 2px solid var(--border); background: var(--bg);
+  cursor: pointer; transition: all .25s;
+  text-align: left; width: 100%;
+}
+.mode-btn:hover { border-color: var(--border2); }
+.mode-btn.active { border-color: var(--gold); background: rgba(201,168,76,.08); }
+.mode-icon { font-size: 20px; }
+.mode-text { font-size: 13px; color: var(--text2); font-weight: 500; }
+.mode-btn.active .mode-text { color: var(--text); }
+
+.customization-options { 
+  border-top: 1px solid var(--border); 
+  padding-top: 20px; 
+  margin-top: 10px;
+}
+
 /* Generate button */
 .gen-section { margin-top: 36px; padding-top: 28px; border-top: 1px solid var(--border); }
 .gen-btn {
@@ -482,26 +504,43 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
           <div class="sim-model-hint">Personalizează-ți designul mai jos</div>
         </div>
 
-        <!-- Heel -->
-        <div class="sim-section">
-          <div class="sim-label">Înălțimi de toc disponibile</div>
-          <div class="heel-row" id="heel-row"></div>
+        <!-- Mode Toggle -->
+        <div class="mode-toggle-section">
+          <div class="mode-toggle">
+            <button class="mode-btn active" id="mode-preview" onclick="setMode('preview')">
+              <span class="mode-icon">👁️</span>
+              <span class="mode-text">Vreau doar să văd cum arată pe mine</span>
+            </button>
+            <button class="mode-btn" id="mode-customize" onclick="setMode('customize')">
+              <span class="mode-icon">✨</span>
+              <span class="mode-text">Vreau să personalizez designul</span>
+            </button>
+          </div>
         </div>
 
-        <!-- Material -->
-        <div class="sim-section">
-          <div class="sim-label">Materiale disponibile</div>
-          <div class="chip-row" id="material-row"></div>
+        <!-- Customization Options (hidden in preview mode) -->
+        <div class="customization-options" id="customization-options" style="display:none;">
+          <!-- Heel -->
+          <div class="sim-section">
+            <div class="sim-label">Înălțimi de toc disponibile</div>
+            <div class="heel-row" id="heel-row"></div>
+          </div>
+
+          <!-- Material -->
+          <div class="sim-section">
+            <div class="sim-label">Materiale disponibile</div>
+            <div class="chip-row" id="material-row"></div>
+          </div>
+
+          <!-- Color -->
+          <div class="sim-section">
+            <div class="sim-label">Culori disponibile</div>
+            <div class="swatch-row" id="color-row"></div>
+            <div class="color-label" id="color-label"></div>
+          </div>
         </div>
 
-        <!-- Color -->
-        <div class="sim-section">
-          <div class="sim-label">Culori disponibile</div>
-          <div class="swatch-row" id="color-row"></div>
-          <div class="color-label" id="color-label"></div>
-        </div>
-
-        <!-- Occasion -->
+        <!-- Occasion (always visible) -->
         <div class="sim-section">
           <div class="sim-label">Ocazie</div>
           <div class="occ-row" id="occasion-row"></div>
@@ -509,8 +548,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 
         <!-- Generate -->
         <div class="gen-section">
-          <button class="gen-btn" id="gen-btn" disabled onclick="generateAll()">✦  Vizualizează Designul</button>
-          <div class="gen-hint" id="gen-hint">Selectează toate opțiunile de mai sus</div>
+          <button class="gen-btn" id="gen-btn" disabled onclick="generateAll()">✦  Vizualizează</button>
+          <div class="gen-hint" id="gen-hint">Selectează ocazia</div>
         </div>
 
         <div class="error-box" id="error-box"></div>
@@ -518,7 +557,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
         <!-- Results -->
         <div class="results-section" id="results-section">
           <div class="results-grid">
-            <div class="result-card">
+            <div class="result-card" id="product-result-card">
               <div class="result-header">
                 <div class="title"><span>👟</span> Produsul Final</div>
                 <button class="regen-btn" id="product-regen" style="display:none;" onclick="generateOne('product')">↻ Refă</button>
@@ -768,6 +807,33 @@ let apiKeySource = apiKey ? 'saved' : '';
 let loading = { product: false, model: false };
 let lastProductImageB64 = null;
 let productImageB64 = null; // Loaded from selected product
+let currentMode = 'preview'; // 'preview' or 'customize'
+
+// ══════════════════════════════════════════════════════════════
+// MODE SWITCHING
+// ══════════════════════════════════════════════════════════════
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('mode-preview').classList.toggle('active', mode === 'preview');
+  document.getElementById('mode-customize').classList.toggle('active', mode === 'customize');
+  document.getElementById('customization-options').style.display = mode === 'customize' ? 'block' : 'none';
+  
+  // In preview mode, hide product result card (only show model)
+  const productCard = document.getElementById('product-result-card');
+  if (productCard) {
+    productCard.style.display = mode === 'preview' ? 'none' : 'block';
+  }
+  
+  // Reset selections when switching to preview mode
+  if (mode === 'preview') {
+    selectedHeel = null;
+    selectedMaterial = null;
+    selectedColor = null;
+    document.querySelectorAll('.heel-btn, .chip, .swatch').forEach(b => b.classList.remove('active'));
+  }
+  
+  updateGenButton();
+}
 
 // ══════════════════════════════════════════════════════════════
 // INIT
@@ -991,20 +1057,9 @@ async function loadProductImage() {
 function buildHeelOptions() {
   const available = (selectedProduct.heels || '').split(',').map(s => s.trim().toLowerCase());
   const row = document.getElementById('heel-row');
-  // Add "Original" option first, then available heels
   const availableHeels = HEELS.filter(h => available.includes(h.id));
   
-  let html = `
-    <button class="heel-btn" data-id="original" onclick="selectHeel('original')">
-      <svg width="40" height="36" viewBox="0 0 40 36" fill="none">
-        <circle cx="20" cy="18" r="12" fill="#555"/>
-        <text x="20" y="22" text-anchor="middle" fill="white" font-size="10">✓</text>
-      </svg>
-      <span class="label">Original</span>
-      <span class="sub">Fără modificări</span>
-    </button>`;
-  
-  html += availableHeels.map(h => {
+  row.innerHTML = availableHeels.map(h => {
     const svgH = { 'flat':2, '6cm':10, '8cm':16, '9.5cm':24, '11cm':32 }[h.id] || 16;
     return `
       <button class="heel-btn" data-id="${h.id}" onclick="selectHeel('${h.id}')">
@@ -1016,36 +1071,26 @@ function buildHeelOptions() {
         <span class="sub">${h.height}</span>
       </button>`;
   }).join('');
-  
-  row.innerHTML = html;
 }
 
 function buildMaterialOptions() {
   const available = (selectedProduct.materials || '').split(',').map(s => s.trim().toLowerCase());
   const row = document.getElementById('material-row');
-  // Add "Original" option first, then available materials
   const availableMaterials = MATERIALS.filter(m => available.includes(m.id));
   
-  let html = `<button class="chip" data-id="original" onclick="selectMaterial('original')">Original</button>`;
-  html += availableMaterials.map(m => {
+  row.innerHTML = availableMaterials.map(m => {
     return `<button class="chip" data-id="${m.id}" onclick="selectMaterial('${m.id}')">${m.label}</button>`;
   }).join('');
-  
-  row.innerHTML = html;
 }
 
 function buildColorOptions() {
   const available = (selectedProduct.colors || '').split(',').map(s => s.trim().toLowerCase());
   const row = document.getElementById('color-row');
-  // Add "Original" option first, then available colors
   const availableColors = COLORS.filter(c => available.includes(c.id));
   
-  let html = `<button class="swatch original-swatch" data-id="original" title="Original - Fără modificări" onclick="selectColor('original')">✓</button>`;
-  html += availableColors.map(c => {
+  row.innerHTML = availableColors.map(c => {
     return `<button class="swatch" data-id="${c.id}" style="background:${c.hex}" title="${c.label}" onclick="selectColor('${c.id}')"></button>`;
   }).join('');
-  
-  row.innerHTML = html;
   document.getElementById('color-label').textContent = '';
 }
 
@@ -1063,42 +1108,26 @@ function buildOccasionOptions() {
 // SELECTION HANDLERS
 // ══════════════════════════════════════════════════════════════
 function selectHeel(id) {
-  if (id === 'original') {
-    selectedHeel = { id: 'original', label: 'Original', height: 'Fără modificări', desc: 'original heel height' };
-  } else {
-    selectedHeel = HEELS.find(h => h.id === id);
-  }
+  selectedHeel = HEELS.find(h => h.id === id);
   document.querySelectorAll('.heel-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.id === id);
-    const paths = b.querySelectorAll('path, rect, circle');
+    const paths = b.querySelectorAll('path, rect');
     paths.forEach(p => p.setAttribute('fill', b.dataset.id === id ? '#c9a84c' : '#555'));
   });
   updateGenButton();
 }
 
 function selectMaterial(id) {
-  if (id === 'original') {
-    selectedMaterial = { id: 'original', label: 'Original', texture: 'original material' };
-  } else {
-    selectedMaterial = MATERIALS.find(m => m.id === id);
-  }
+  selectedMaterial = MATERIALS.find(m => m.id === id);
   document.querySelectorAll('.chip').forEach(b => b.classList.toggle('active', b.dataset.id === id));
   updateGenButton();
 }
 
 function selectColor(id) {
-  if (id === 'original') {
-    selectedColor = { id: 'original', label: 'Original', hex: '#888', desc: 'original color' };
-  } else {
-    selectedColor = COLORS.find(c => c.id === id);
-  }
+  selectedColor = COLORS.find(c => c.id === id);
   document.querySelectorAll('.swatch').forEach(b => {
     b.classList.toggle('active', b.dataset.id === id);
-    if (id === 'original') {
-      b.style.boxShadow = b.dataset.id === id ? '0 0 14px rgba(201,168,76,0.5)' : 'none';
-    } else {
-      b.style.boxShadow = b.dataset.id === id ? `0 0 14px ${COLORS.find(c=>c.id===id)?.hex || '#888'}66` : 'none';
-    }
+    b.style.boxShadow = b.dataset.id === id ? `0 0 14px ${selectedColor?.hex || '#888'}66` : 'none';
   });
   document.getElementById('color-label').textContent = selectedColor ? `Selectat: ${selectedColor.label}` : '';
   updateGenButton();
@@ -1111,18 +1140,28 @@ function selectOccasion(id) {
 }
 
 function updateGenButton() {
-  const ready = selectedProduct && productImageB64 && selectedHeel && selectedMaterial && selectedColor && selectedOccasion && apiKey;
+  // In preview mode, only need product and occasion
+  // In customize mode, need all selections
+  let ready;
+  if (currentMode === 'preview') {
+    ready = selectedProduct && productImageB64 && selectedOccasion && apiKey;
+  } else {
+    ready = selectedProduct && productImageB64 && selectedHeel && selectedMaterial && selectedColor && selectedOccasion && apiKey;
+  }
+  
   const btn = document.getElementById('gen-btn');
   const hint = document.getElementById('gen-hint');
   btn.disabled = !ready || loading.product || loading.model;
   btn.className = ready ? 'gen-btn ready' : 'gen-btn';
   
   if (!apiKey) {
-    hint.textContent = 'Enter API key first (click 🔑 above)';
-  } else if (!selectedHeel || !selectedMaterial || !selectedColor || !selectedOccasion) {
-    hint.textContent = 'Select all options above';
+    hint.textContent = 'Se încarcă cheia API...';
+  } else if (currentMode === 'preview' && !selectedOccasion) {
+    hint.textContent = 'Selectează ocazia';
+  } else if (currentMode === 'customize' && (!selectedHeel || !selectedMaterial || !selectedColor || !selectedOccasion)) {
+    hint.textContent = 'Selectează toate opțiunile de mai sus';
   } else if (!productImageB64) {
-    hint.textContent = 'Loading product image...';
+    hint.textContent = 'Se încarcă imaginea produsului...';
   } else {
     hint.style.display = 'none';
   }
@@ -1240,14 +1279,17 @@ async function generateOne(type) {
   const mime = productImageB64.startsWith('data:image/png') ? 'image/png' : 'image/jpeg';
   const rawB64 = productImageB64.split(',')[1];
 
-  // Check if all selections are "original" (no changes)
-  const isOriginalHeel = selectedHeel.id === 'original';
-  const isOriginalMaterial = selectedMaterial.id === 'original';
-  const isOriginalColor = selectedColor.id === 'original';
-  const allOriginal = isOriginalHeel && isOriginalMaterial && isOriginalColor;
+  // Check if we're in preview mode (no customization)
+  const isPreviewMode = currentMode === 'preview';
+  
+  // Check if all selections are "original" (no changes) - only relevant in customize mode
+  const isOriginalHeel = !selectedHeel || selectedHeel.id === 'original';
+  const isOriginalMaterial = !selectedMaterial || selectedMaterial.id === 'original';
+  const isOriginalColor = !selectedColor || selectedColor.id === 'original';
+  const allOriginal = isPreviewMode || (isOriginalHeel && isOriginalMaterial && isOriginalColor);
 
   // Heel guidance — only changes height, preserves original heel shape
-  const heelGuide = selectedHeel.id === 'original'
+  const heelGuide = isPreviewMode || isOriginalHeel
     ? 'Keep the ORIGINAL heel height exactly as shown.'
     : selectedHeel.id === 'flat'
     ? 'Remove the heel completely — flat sole with zero elevation.'
@@ -1360,7 +1402,16 @@ Full-body shot, shoes clearly visible with identifiable details. Professional ph
 }
 
 function generateAll() {
-  generateOne('product').then(() => generateOne('model'));
+  if (currentMode === 'preview') {
+    // In preview mode, skip product generation, just generate model shot
+    // Store original image as lastProductImageB64 for model generation
+    const rawB64 = productImageB64.split(',')[1];
+    lastProductImageB64 = rawB64;
+    generateOne('model');
+  } else {
+    // In customize mode, generate both
+    generateOne('product').then(() => generateOne('model'));
+  }
 }
 
 function showOrderSection() {
@@ -1368,11 +1419,19 @@ function showOrderSection() {
   const summary = document.getElementById('order-summary');
   const btn = document.getElementById('order-btn');
   
-  summary.innerHTML = `
-    <strong>${selectedProduct.name}</strong><br>
-    ${selectedHeel.label} heel · ${selectedMaterial.label} · ${selectedColor.label}<br>
-    Perfect for: ${selectedOccasion.label}
-  `;
+  if (currentMode === 'preview') {
+    summary.innerHTML = `
+      <strong>${selectedProduct.name}</strong><br>
+      Design original<br>
+      Perfect pentru: ${selectedOccasion.label}
+    `;
+  } else {
+    summary.innerHTML = `
+      <strong>${selectedProduct.name}</strong><br>
+      ${selectedHeel?.label || 'Original'} · ${selectedMaterial?.label || 'Original'} · ${selectedColor?.label || 'Original'}<br>
+      Perfect pentru: ${selectedOccasion.label}
+    `;
+  }
   
   btn.href = selectedProduct.shopify_url;
   section.classList.add('visible');
