@@ -301,7 +301,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   </div>
   <div class="header-right">
     <span id="api-status" class="api-status">✓ API Ready</span>
-    <button class="api-btn" onclick="showApiModal()">🔑 API Key</button>
+    <button class="api-btn" onclick="showApiModal()" style="display:none;" id="api-btn-toggle">🔑 API Key</button>
   </div>
 </header>
 
@@ -671,27 +671,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function loadProducts() {
-  // Try Google Sheets first (works when deployed, not locally due to CORS)
-  if (SHEET_CSV_URL && window.location.protocol !== 'file:') {
-    try {
-      console.log('Fetching from Google Sheets...');
-      const resp = await fetch(SHEET_CSV_URL);
-      if (resp.ok) {
-        const csv = await resp.text();
-        const parsed = parseCSV(csv);
-        if (parsed.length > 0) {
-          products = parsed;
-          console.log(`Loaded ${products.length} products from Google Sheets`);
-          return;
-        }
-      }
-    } catch (err) {
-      console.log('Google Sheets fetch failed, using embedded data');
-    }
-  }
-  // Fallback to embedded data
+  // Use embedded data (Google Sheets disabled due to CORS/redirect issues)
   products = SAMPLE_PRODUCTS;
-  console.log(`Loaded ${products.length} embedded products`);
+  console.log(`Loaded ${products.length} products`);
 }
 
 function parseCSV(csv) {
