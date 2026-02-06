@@ -383,6 +383,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 <header class="header">
   <div class="logo-wrap">
     <img src="https://cdn.shopify.com/s/files/1/0531/9678/3793/files/Logo_Ginissima-09.svg?v=1684933230" alt="Ginissima" style="height: 40px;">
+    <span style="font-family: 'Playfair Display', serif; font-size: 16px; color: var(--text2); margin-left: 12px; font-style: italic;">Shoe Designer</span>
   </div>
   <div class="header-right">
     <span id="api-status" class="api-status">✓ API Ready</span>
@@ -446,38 +447,38 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       <div id="simulator-ui" style="display:none;">
         <div class="sim-header">
           <div class="sim-model-name" id="sim-model-name">Model Name</div>
-          <div class="sim-model-hint">Customize your design below</div>
+          <div class="sim-model-hint">Personalizează-ți designul mai jos</div>
         </div>
 
         <!-- Heel -->
         <div class="sim-section">
-          <div class="sim-label">Heel Height</div>
+          <div class="sim-label">Înălțimi de toc disponibile</div>
           <div class="heel-row" id="heel-row"></div>
         </div>
 
         <!-- Material -->
         <div class="sim-section">
-          <div class="sim-label">Material</div>
+          <div class="sim-label">Materiale disponibile</div>
           <div class="chip-row" id="material-row"></div>
         </div>
 
         <!-- Color -->
         <div class="sim-section">
-          <div class="sim-label">Color</div>
+          <div class="sim-label">Culori disponibile</div>
           <div class="swatch-row" id="color-row"></div>
           <div class="color-label" id="color-label"></div>
         </div>
 
         <!-- Occasion -->
         <div class="sim-section">
-          <div class="sim-label">Occasion</div>
+          <div class="sim-label">Ocazie</div>
           <div class="occ-row" id="occasion-row"></div>
         </div>
 
         <!-- Generate -->
         <div class="gen-section">
-          <button class="gen-btn" id="gen-btn" disabled onclick="generateAll()">✦  Visualize My Design</button>
-          <div class="gen-hint" id="gen-hint">Select all options above</div>
+          <button class="gen-btn" id="gen-btn" disabled onclick="generateAll()">✦  Vizualizează Designul</button>
+          <div class="gen-hint" id="gen-hint">Selectează toate opțiunile de mai sus</div>
         </div>
 
         <div class="error-box" id="error-box"></div>
@@ -487,20 +488,20 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
           <div class="results-grid">
             <div class="result-card">
               <div class="result-header">
-                <div class="title"><span>👟</span> Product Shot</div>
-                <button class="regen-btn" id="product-regen" style="display:none;" onclick="generateOne('product')">↻ Redo</button>
+                <div class="title"><span>👟</span> Produsul Final</div>
+                <button class="regen-btn" id="product-regen" style="display:none;" onclick="generateOne('product')">↻ Refă</button>
               </div>
               <div class="result-img-wrap" id="product-img-wrap">
-                <div class="result-empty"><span class="icon">👟</span><span class="text">Awaiting</span></div>
+                <div class="result-empty"><span class="icon">👟</span><span class="text">În așteptare</span></div>
               </div>
             </div>
             <div class="result-card">
               <div class="result-header">
-                <div class="title"><span>👩</span> Model Shot</div>
-                <button class="regen-btn" id="model-regen" style="display:none;" onclick="generateOne('model')">↻ Redo</button>
+                <div class="title"><span>👩</span> Cum va arăta pe tine</div>
+                <button class="regen-btn" id="model-regen" style="display:none;" onclick="generateOne('model')">↻ Refă</button>
               </div>
               <div class="result-img-wrap" id="model-img-wrap">
-                <div class="result-empty"><span class="icon">👩</span><span class="text">Awaiting</span></div>
+                <div class="result-empty"><span class="icon">👩</span><span class="text">În așteptare</span></div>
               </div>
             </div>
           </div>
@@ -508,10 +509,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 
         <!-- Order CTA -->
         <div class="order-section" id="order-section">
-          <div class="order-title">Love Your Design?</div>
+          <div class="order-title">Îți place designul?</div>
           <div class="order-summary" id="order-summary"></div>
           <a class="order-btn" id="order-btn" href="#" target="_blank">
-            Order This Design →
+            Comandă Acest Design →
           </a>
         </div>
       </div>
@@ -958,11 +959,12 @@ async function loadProductImage() {
 function buildHeelOptions() {
   const available = (selectedProduct.heels || '').split(',').map(s => s.trim().toLowerCase());
   const row = document.getElementById('heel-row');
-  row.innerHTML = HEELS.map(h => {
-    const enabled = available.includes(h.id);
+  // Only show available heels
+  const availableHeels = HEELS.filter(h => available.includes(h.id));
+  row.innerHTML = availableHeels.map(h => {
     const svgH = { 'flat':2, '6cm':10, '8cm':16, '9.5cm':24, '11cm':32 }[h.id] || 16;
     return `
-      <button class="heel-btn ${enabled ? '' : 'disabled'}" data-id="${h.id}" ${enabled ? `onclick="selectHeel('${h.id}')"` : ''}>
+      <button class="heel-btn" data-id="${h.id}" onclick="selectHeel('${h.id}')">
         <svg width="40" height="36" viewBox="0 0 40 36" fill="none">
           <path d="M4,${34-svgH} Q4,${32-svgH} 6,${32-svgH} L26,${32-svgH} Q30,${32-svgH} 31,${34-svgH+2} L34,34 L30,34 L28,${34-svgH+4} L6,${34-svgH+4} Q4,${34-svgH+4} 4,${34-svgH} Z" fill="#555"/>
           ${svgH > 5 ? `<rect x="31" y="${34-svgH+2}" width="3" height="${svgH-2}" rx="1.5" fill="#555"/>` : ''}
@@ -976,18 +978,20 @@ function buildHeelOptions() {
 function buildMaterialOptions() {
   const available = (selectedProduct.materials || '').split(',').map(s => s.trim().toLowerCase());
   const row = document.getElementById('material-row');
-  row.innerHTML = MATERIALS.map(m => {
-    const enabled = available.includes(m.id);
-    return `<button class="chip ${enabled ? '' : 'disabled'}" data-id="${m.id}" ${enabled ? `onclick="selectMaterial('${m.id}')"` : ''}>${m.label}</button>`;
+  // Only show available materials
+  const availableMaterials = MATERIALS.filter(m => available.includes(m.id));
+  row.innerHTML = availableMaterials.map(m => {
+    return `<button class="chip" data-id="${m.id}" onclick="selectMaterial('${m.id}')">${m.label}</button>`;
   }).join('');
 }
 
 function buildColorOptions() {
   const available = (selectedProduct.colors || '').split(',').map(s => s.trim().toLowerCase());
   const row = document.getElementById('color-row');
-  row.innerHTML = COLORS.map(c => {
-    const enabled = available.includes(c.id);
-    return `<button class="swatch ${enabled ? '' : 'disabled'}" data-id="${c.id}" style="background:${c.hex}" title="${c.label}" ${enabled ? `onclick="selectColor('${c.id}')"` : ''}></button>`;
+  // Only show available colors
+  const availableColors = COLORS.filter(c => available.includes(c.id));
+  row.innerHTML = availableColors.map(c => {
+    return `<button class="swatch" data-id="${c.id}" style="background:${c.hex}" title="${c.label}" onclick="selectColor('${c.id}')"></button>`;
   }).join('');
   document.getElementById('color-label').textContent = '';
 }
