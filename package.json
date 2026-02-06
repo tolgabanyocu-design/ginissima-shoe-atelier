@@ -1,0 +1,12 @@
+{
+  "name": "ginissima-shoe-atelier",
+  "version": "1.0.0",
+  "description": "Ginissima Shoe Atelier - AI Shoe Customization",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ginissima's Shoe Atelier — Design Your Own</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #ffffff; --surface: #f8f8f8; --surface2: #f5f5f5; --border: #e5e5e5;
+  --border2: #d0d0d0; --gold: #c9a84c; --gold-dark: #a8862e;
+  --text: #1a1a1a; --text2: #444; --text3: #666; --text4: #999;
+  --green: #2d8a4e; --green-bg: #e8f5ec; --red: #c41e3a; --red-bg: #fef2f2;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+/* Header */
+.header {
+  padding: 16px 28px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(255,255,255,.95); backdrop-filter: blur(20px);
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+}
+.logo-wrap { display: flex; align-items: center; gap: 14px; }
+.logo-icon { width: 42px; height: 42px; border-radius: 10px; background: linear-gradient(135deg, var(--gold), var(--gold-dark)); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.brand-name { font-family: 'Oswald', sans-serif; font-size: 24px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); }
+.brand-sub { font-size: 9px; color: var(--text3); letter-spacing: .14em; text-transform: uppercase; margin-top: 2px; font-family: 'DM Sans', sans-serif; }
+.header-right { display: flex; align-items: center; gap: 16px; }
+.api-status { font-size: 10px; color: var(--green); background: var(--green-bg); padding: 4px 12px; border-radius: 100px; display: none; }
+.api-btn {
+  padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border2);
+  background: var(--surface); color: var(--text2); font-size: 12px;
+  cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .2s;
+}
+.api-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+/* Main Layout */
+.main-wrap { display: flex; height: 100vh; padding-top: 71px; }
+
+/* Left Panel — Catalog */
+.catalog-panel {
+  width: 380px; min-width: 380px; border-right: 1px solid var(--border);
+  background: var(--surface2); display: flex; flex-direction: column;
+}
+.catalog-header {
+  padding: 20px 20px 16px; border-bottom: 1px solid var(--border);
+}
+.catalog-title { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+.catalog-subtitle { font-size: 11px; color: var(--text3); }
+.catalog-search {
+  margin: 16px 20px 12px; padding: 10px 14px; border-radius: 10px;
+  border: 1px solid var(--border2); background: var(--bg); color: var(--text);
+  font-size: 13px; font-family: 'DM Sans', sans-serif; outline: none; width: calc(100% - 40px);
+}
+.catalog-search:focus { border-color: var(--gold); }
+.catalog-search::placeholder { color: var(--text4); }
+
+/* Category List */
+.category-list { padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.category-btn {
+  display: flex; align-items: center; gap: 12px; padding: 16px 18px;
+  background: var(--surface); border: 2px solid var(--border); border-radius: 12px;
+  cursor: pointer; transition: all .25s; text-align: left;
+}
+.category-btn:hover { border-color: var(--border2); background: rgba(0,0,0,.02); }
+.category-btn.active { border-color: var(--gold); background: rgba(201,168,76,.08); }
+.cat-icon { font-size: 24px; }
+.cat-label { flex: 1; font-size: 14px; font-weight: 500; color: var(--text); }
+.cat-count { font-size: 11px; color: var(--text3); background: var(--bg); padding: 3px 10px; border-radius: 100px; }
+
+/* Product List Section */
+.product-list-section { display: flex; flex-direction: column; height: 100%; }
+.product-list-header { 
+  display: flex; align-items: center; gap: 12px; padding: 12px 16px; 
+  border-bottom: 1px solid var(--border); 
+}
+.back-btn {
+  background: none; border: 1px solid var(--border2); color: var(--text2);
+  padding: 6px 12px; border-radius: 8px; font-size: 12px; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; transition: all .2s;
+}
+.back-btn:hover { border-color: var(--gold); color: var(--gold); }
+.current-category { font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 600; }
+
+.catalog-grid {
+  flex: 1; overflow-y: auto; padding: 12px 16px 24px; 
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  align-content: start;
+}
+.catalog-loading, .catalog-error {
+  padding: 40px 20px; text-align: center; color: var(--text3); font-size: 13px;
+}
+.catalog-error { color: var(--red); }
+
+/* Catalog Card */
+.model-card {
+  background: var(--bg); border-radius: 12px; overflow: hidden;
+  border: 2px solid var(--border); cursor: pointer; transition: all .25s;
+}
+.model-card:hover { border-color: var(--border2); }
+.model-card.selected { border-color: var(--gold); background: rgba(201,168,76,.05); }
+.model-img-wrap { 
+  width: 100%; 
+  aspect-ratio: 1; 
+  background: #f8f8f8; 
+  overflow: hidden; 
+  padding: 8px;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.model-img-wrap img { 
+  max-width: 100%; 
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.model-info { padding: 10px 12px; }
+.model-name { font-family: 'Playfair Display', serif; font-size: 12px; font-weight: 600; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.model-tags { display: flex; flex-wrap: wrap; gap: 3px; }
+.model-tag {
+  font-size: 8px; padding: 2px 6px; border-radius: 100px;
+  background: var(--bg); color: var(--text3); letter-spacing: .03em;
+}
+.model-tag.heel { border: 1px solid var(--border); }
+.model-tag.color { border: 1px solid var(--border); }
+.model-tag.material { border: 1px solid var(--border); }
+
+/* Right Panel — Simulator */
+.simulator-panel { flex: 1; overflow-y: auto; background: var(--bg); }
+.simulator-content { max-width: 900px; margin: 0 auto; padding: 32px 40px 80px; }
+
+/* Empty State */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: calc(100vh - 200px); text-align: center; color: var(--text3);
+}
+.empty-icon { font-size: 64px; margin-bottom: 20px; opacity: .3; }
+.empty-title { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--text2); margin-bottom: 8px; }
+.empty-hint { font-size: 13px; max-width: 280px; line-height: 1.6; }
+
+/* Simulator UI */
+.sim-header { margin-bottom: 28px; }
+.sim-model-name { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 600; margin-bottom: 4px; }
+.sim-model-hint { font-size: 12px; color: var(--text3); }
+
+.sim-section { margin-bottom: 28px; }
+.sim-label { font-size: 11px; color: #555; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 12px; font-weight: 600; }
+
+/* Heel buttons */
+.heel-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.heel-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 14px 8px; border-radius: 14px; min-width: 76px; cursor: pointer;
+  transition: all .25s; border: 2px solid var(--border); background: var(--bg);
+}
+.heel-btn:hover:not(.disabled) { border-color: var(--border2); }
+.heel-btn.active { border-color: var(--gold); background: rgba(201,168,76,.1); }
+.heel-btn.disabled { opacity: .3; cursor: not-allowed; }
+.heel-btn .label { font-size: 12px; font-weight: 400; color: var(--text2); }
+.heel-btn.active .label { font-weight: 600; color: var(--text); }
+.heel-btn .sub { font-size: 10px; color: var(--text3); }
+
+/* Chips */
+.chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip {
+  padding: 9px 18px; border-radius: 100px; cursor: pointer; white-space: nowrap;
+  border: 1.5px solid var(--border2); background: transparent; color: var(--text2);
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 400;
+  letter-spacing: .02em; transition: all .25s;
+}
+.chip:hover:not(.disabled) { border-color: var(--text3); }
+.chip.active { border-color: var(--gold); background: var(--gold); color: #111; font-weight: 600; }
+.chip.disabled { opacity: .3; cursor: not-allowed; }
+
+/* Color swatches */
+.swatch-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.swatch {
+  width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
+  border: 2px solid var(--border); transition: all .2s; flex-shrink: 0;
+}
+.swatch.active { border: 3px solid var(--text); }
+.swatch.disabled { opacity: .25; cursor: not-allowed; }
+.color-label { margin-top: 8px; font-size: 12px; color: var(--text3); }
+
+/* Occasion cards */
+.occ-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.occ-card {
+  padding: 14px 10px; border-radius: 14px; cursor: pointer; transition: all .25s;
+  border: 2px solid var(--border); background: var(--bg); color: var(--text2);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  flex: 1 1 calc(25% - 8px); min-width: 90px;
+}
+.occ-card:hover { border-color: var(--border2); }
+.occ-card.active { border-color: var(--gold); background: var(--gold); color: #111; }
+.occ-card .emoji { font-size: 22px; }
+.occ-card .label { font-size: 11px; font-weight: 500; letter-spacing: .04em; }
+
+/* Generate button */
+.gen-section { margin-top: 36px; padding-top: 28px; border-top: 1px solid var(--border); }
+.gen-btn {
+  width: 100%; padding: 18px; border-radius: 14px; border: none;
+  font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 600;
+  letter-spacing: .05em; text-transform: uppercase; transition: all .3s; cursor: pointer;
+  background: var(--surface); color: var(--text4);
+}
+.gen-btn.ready { background: linear-gradient(135deg, var(--gold), var(--gold-dark)); color: #111; }
+.gen-btn.ready:hover { filter: brightness(1.1); }
+.gen-btn:disabled { background: var(--surface); color: var(--text4); cursor: not-allowed; }
+.gen-hint { margin-top: 10px; font-size: 11px; color: var(--text4); text-align: center; }
+
+/* Error */
+.error-box { padding: 14px 18px; border-radius: 14px; background: var(--red-bg); border: 1px solid #fca5a5; color: var(--red); font-size: 13px; margin-top: 20px; display: none; }
+
+/* Results */
+.results-section { margin-top: 40px; display: none; }
+.results-section.visible { display: block; }
+.results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.result-card { background: var(--surface2); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; }
+.result-header { padding: 14px 18px 10px; display: flex; align-items: center; justify-content: space-between; }
+.result-header .title { font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.regen-btn { background: none; border: 1px solid var(--border2); color: var(--text3); padding: 4px 10px; border-radius: 100px; font-size: 10px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+.regen-btn:hover { border-color: var(--text3); color: var(--text2); }
+.result-img-wrap { width: 100%; aspect-ratio: 3/4; background: var(--surface); position: relative; overflow: hidden; }
+.result-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+.result-loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+.spinner { width: 28px; height: 28px; border: 2.5px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin .8s linear infinite; }
+.progress-text { font-size: 10px; color: var(--text3); letter-spacing: .08em; text-transform: uppercase; }
+.shimmer-bar { width: 50%; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.shimmer-fill { width: 100%; height: 100%; background: linear-gradient(90deg, transparent, var(--gold), transparent); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+.result-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 6px; }
+.result-empty .icon { font-size: 32px; opacity: .15; }
+.result-empty .text { font-size: 11px; color: var(--text3); }
+
+/* Order CTA */
+.order-section { margin-top: 32px; padding: 24px; background: var(--surface); border-radius: 16px; border: 1px solid var(--border); display: none; }
+.order-section.visible { display: block; }
+.order-title { font-family: 'Playfair Display', serif; font-size: 18px; margin-bottom: 8px; }
+.order-summary { font-size: 13px; color: var(--text3); margin-bottom: 20px; line-height: 1.6; }
+.order-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 14px 28px; border-radius: 12px; border: none;
+  background: var(--gold); color: #111; font-family: 'Playfair Display', serif;
+  font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; text-decoration: none;
+}
+.order-btn:hover { filter: brightness(1.1); }
+
+/* API Modal */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.7); backdrop-filter: blur(4px);
+  display: none; align-items: center; justify-content: center; z-index: 200;
+}
+.modal-overlay.visible { display: flex; }
+.modal-box {
+  background: var(--surface); border-radius: 20px; padding: 32px; width: 90%; max-width: 440px;
+  border: 1px solid var(--border);
+}
+.modal-title { font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 8px; }
+.modal-hint { font-size: 12px; color: var(--text3); margin-bottom: 20px; line-height: 1.6; }
+.modal-input {
+  width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border2);
+  background: var(--bg); color: var(--text); font-size: 14px; font-family: 'DM Sans', sans-serif;
+  margin-bottom: 12px; outline: none;
+}
+.modal-input:focus { border-color: var(--gold); }
+.modal-btns { display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px; }
+.modal-btn {
+  padding: 10px 20px; border-radius: 10px; font-family: 'DM Sans', sans-serif;
+  font-size: 13px; cursor: pointer; transition: all .2s;
+}
+.modal-btn.secondary { background: transparent; border: 1px solid var(--border2); color: var(--text2); }
+.modal-btn.primary { background: var(--gold); border: none; color: #111; font-weight: 600; }
+.modal-btn:hover { filter: brightness(1.1); }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .main-wrap { flex-direction: column; }
+  .catalog-panel { width: 100%; min-width: unset; max-height: 40vh; border-right: none; border-bottom: 1px solid var(--border); }
+  .catalog-grid { flex-direction: row; flex-wrap: wrap; }
+  .model-card { width: calc(50% - 6px); }
+  .simulator-panel { flex: 1; }
+  .results-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="logo-wrap">
+    <img src="https://cdn.shopify.com/s/files/1/0531/9678/3793/files/Logo_Ginissima-09.svg?v=1684933230" alt="Ginissima" style="height: 40px;">
+  </div>
+  <div class="header-right">
+    <span id="api-status" class="api-status">✓ API Ready</span>
+    <button class="api-btn" onclick="showApiModal()">🔑 API Key</button>
+  </div>
+</header>
+
+<!-- Main -->
+<div class="main-wrap">
+  <!-- Left: Catalog -->
+  <div class="catalog-panel">
+    <div class="catalog-header">
+      <div class="catalog-title">Categorii</div>
+      <div class="catalog-subtitle">Alege o categorie de pantofi</div>
+    </div>
+    <div class="category-list" id="category-list">
+      <button class="category-btn" data-category="Pantofi cu toc" onclick="selectCategory('Pantofi cu toc')">
+        <span class="cat-icon">👠</span>
+        <span class="cat-label">Pantofi cu toc</span>
+        <span class="cat-count" id="count-pantofi-cu-toc"></span>
+      </button>
+      <button class="category-btn" data-category="Pantofi fara toc" onclick="selectCategory('Pantofi fara toc')">
+        <span class="cat-icon">🥿</span>
+        <span class="cat-label">Pantofi fără toc</span>
+        <span class="cat-count" id="count-pantofi-fara-toc"></span>
+      </button>
+      <button class="category-btn" data-category="Cizme & Ghete" onclick="selectCategory('Cizme & Ghete')">
+        <span class="cat-icon">👢</span>
+        <span class="cat-label">Cizme & Ghete</span>
+        <span class="cat-count" id="count-cizme-ghete"></span>
+      </button>
+      <button class="category-btn" data-category="Nunta & Eveniment" onclick="selectCategory('Nunta & Eveniment')">
+        <span class="cat-icon">💒</span>
+        <span class="cat-label">Nuntă & Eveniment</span>
+        <span class="cat-count" id="count-nunta"></span>
+      </button>
+    </div>
+    <div class="product-list-section" id="product-list-section" style="display:none;">
+      <div class="product-list-header">
+        <button class="back-btn" onclick="showCategories()">← Înapoi</button>
+        <span class="current-category" id="current-category"></span>
+      </div>
+      <input type="text" class="catalog-search" id="catalog-search" placeholder="Caută modele...">
+      <div class="catalog-grid" id="catalog-grid">
+        <div class="catalog-loading">Se încarcă...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Simulator -->
+  <div class="simulator-panel">
+    <div class="simulator-content" id="simulator-content">
+      <!-- Empty state (before selection) -->
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">👠</div>
+        <div class="empty-title">Alege un Model</div>
+        <div class="empty-hint">Selectează o categorie din stânga și alege un model pentru a începe să-ți personalizezi pantofii.</div>
+      </div>
+
+      <!-- Simulator UI (after selection) -->
+      <div id="simulator-ui" style="display:none;">
+        <div class="sim-header">
+          <div class="sim-model-name" id="sim-model-name">Model Name</div>
+          <div class="sim-model-hint">Customize your design below</div>
+        </div>
+
+        <!-- Heel -->
+        <div class="sim-section">
+          <div class="sim-label">Heel Height</div>
+          <div class="heel-row" id="heel-row"></div>
+        </div>
+
+        <!-- Material -->
+        <div class="sim-section">
+          <div class="sim-label">Material</div>
+          <div class="chip-row" id="material-row"></div>
+        </div>
+
+        <!-- Color -->
+        <div class="sim-section">
+          <div class="sim-label">Color</div>
+          <div class="swatch-row" id="color-row"></div>
+          <div class="color-label" id="color-label"></div>
+        </div>
+
+        <!-- Occasion -->
+        <div class="sim-section">
+          <div class="sim-label">Occasion</div>
+          <div class="occ-row" id="occasion-row"></div>
+        </div>
+
+        <!-- Generate -->
+        <div class="gen-section">
+          <button class="gen-btn" id="gen-btn" disabled onclick="generateAll()">✦  Visualize My Design</button>
+          <div class="gen-hint" id="gen-hint">Select all options above</div>
+        </div>
+
+        <div class="error-box" id="error-box"></div>
+
+        <!-- Results -->
+        <div class="results-section" id="results-section">
+          <div class="results-grid">
+            <div class="result-card">
+              <div class="result-header">
+                <div class="title"><span>👟</span> Product Shot</div>
+                <button class="regen-btn" id="product-regen" style="display:none;" onclick="generateOne('product')">↻ Redo</button>
+              </div>
+              <div class="result-img-wrap" id="product-img-wrap">
+                <div class="result-empty"><span class="icon">👟</span><span class="text">Awaiting</span></div>
+              </div>
+            </div>
+            <div class="result-card">
+              <div class="result-header">
+                <div class="title"><span>👩</span> Model Shot</div>
+                <button class="regen-btn" id="model-regen" style="display:none;" onclick="generateOne('model')">↻ Redo</button>
+              </div>
+              <div class="result-img-wrap" id="model-img-wrap">
+                <div class="result-empty"><span class="icon">👩</span><span class="text">Awaiting</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order CTA -->
+        <div class="order-section" id="order-section">
+          <div class="order-title">Love Your Design?</div>
+          <div class="order-summary" id="order-summary"></div>
+          <a class="order-btn" id="order-btn" href="#" target="_blank">
+            Order This Design →
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- API Key Modal -->
+<div class="modal-overlay" id="api-modal">
+  <div class="modal-box">
+    <div class="modal-title">Gemini API Key</div>
+    <div class="modal-hint">Load your API key from a text file (recommended) or paste it directly. Your key stays in your browser only.</div>
+    
+    <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+      <button class="modal-btn secondary" style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="document.getElementById('key-file').click()">
+        📄 Load from .txt file
+      </button>
+      <input type="file" id="key-file" accept=".txt,.env,.key" style="display:none">
+    </div>
+    
+    <div style="text-align:center; color:#555; font-size:11px; margin-bottom:12px;">— or paste manually —</div>
+    
+    <input type="password" class="modal-input" id="api-key-input" placeholder="Paste API key here...">
+    <div class="modal-btns">
+      <button class="modal-btn secondary" onclick="hideApiModal()">Cancel</button>
+      <button class="modal-btn primary" onclick="saveApiKey()">Save Key</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// CONFIG — Replace this URL with your published Google Sheet CSV
+// ══════════════════════════════════════════════════════════════
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1R3FtDrbm7nVj1tBYl2yf9ipzZAFlv3aMXPHj1QBBmE0/export?format=csv&gid=0';
+
+// Full product catalog - 96 products from Ginissima
+const SAMPLE_PRODUCTS = [
+  // ═══════════════════════════════════════════════════════════
+  // PANTOFI CU TOC (24 products)
+  // ═══════════════════════════════════════════════════════════
+  { category: 'Pantofi cu toc', model_id: 'alice-silicon', name: 'Pantofi Alice Silicon Editie Limitata', image_url: 'https://ginissima.ro/cdn/shop/products/7-_2.jpg?v=1612624584&width=533', heels: '8cm,9.5cm,11cm', colors: 'transparent', materials: 'silicon', shopify_url: 'https://ginissima.ro/collections/pantofi/products/pantofi-cu-toc-alice-silicon-editie-limitata' },
+  { category: 'Pantofi cu toc', model_id: 'thea-satin-fucsia', name: 'Sandale Thea Satin Fucsia', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06051.jpg?v=1696510318&width=533', heels: '8cm,9.5cm', colors: 'fucsia,negru,rosu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-thea-satin-plum' },
+  { category: 'Pantofi cu toc', model_id: 'cleo-satin-nude-auriu', name: 'Sandale Cleo Satin Varf Ascutit Nude-Auriu', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06693.jpg?v=1686828209&width=533', heels: '8cm,9.5cm', colors: 'nude-auriu,alb,gri-argintiu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-cleo-satin-varf-ascutit-nude-auriu' },
+  { category: 'Pantofi cu toc', model_id: 'thea-lac-nude', name: 'Sandale Thea Piele Lacuita Nude', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06685.jpg?v=1686815221&width=533', heels: '8cm,9.5cm', colors: 'nude,rosu,negru', materials: 'piele lacuita', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-thea-nude' },
+  { category: 'Pantofi cu toc', model_id: 'daisy-aurii', name: 'Sandale Daisy Piele Naturala Varf Ascutit Aurii', image_url: 'https://ginissima.ro/cdn/shop/files/DSC01872.jpg?v=1712837110&width=533', heels: '8cm,9.5cm', colors: 'auriu,argintiu,alb', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-daisy-gold-varf-ascutit' },
+  { category: 'Pantofi cu toc', model_id: 'cleo-satin-alb', name: 'Sandale Cleo Satin Varf Ascutit Alb', image_url: 'https://ginissima.ro/cdn/shop/files/DSC05988_829a0b62-26b3-4f5a-958b-ecefab2582a7.jpg?v=1736944189&width=533', heels: '8cm,9.5cm', colors: 'alb,nude,nude-auriu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-cleo-satin-varf-ascutit-alb' },
+  { category: 'Pantofi cu toc', model_id: 'daisy-negru-alb', name: 'Sandale Daisy Satin Varf Ascutit Negru/Alb', image_url: 'https://ginissima.ro/cdn/shop/products/DD1B0864.jpg?v=1656076510&width=533', heels: '8cm,9.5cm', colors: 'negru-alb,negru,rosu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-daisy-varf-ascutit-negru-alb' },
+  { category: 'Pantofi cu toc', model_id: 'thea-auriu-cracke', name: 'Sandale Thea Piele Naturala Auriu Cracke', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06656.jpg?v=1686815703&width=533', heels: '8cm,9.5cm', colors: 'auriu,argintiu,nude', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-thea-piele-naturala-auriu-cracke' },
+  { category: 'Pantofi cu toc', model_id: 'seline-argintii', name: 'Sandale Seline Piele Naturala Argintii', image_url: 'https://ginissima.ro/cdn/shop/products/IMG_2601-Recovered.jpg?v=1649771545&width=533', heels: '8cm,9.5cm', colors: 'argintiu,auriu,negru', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-seline-piele-naturala-argintii' },
+  { category: 'Pantofi cu toc', model_id: 'alice-lac-negri', name: 'Pantofi Alice Piele Lacuita Negri', image_url: 'https://ginissima.ro/cdn/shop/products/CLARA01.jpg?v=1612873656&width=533', heels: '8cm,9.5cm,11cm', colors: 'negru,rosu,nude', materials: 'piele lacuita', shopify_url: 'https://ginissima.ro/collections/pantofi/products/pantofi-cu-toc-alice-lac-negri' },
+  { category: 'Pantofi cu toc', model_id: 'samantha-funda-negru-alb', name: 'Pantofi Samantha cu Funda Piele Intoarsa Negru/Alb', image_url: 'https://ginissima.ro/cdn/shop/products/DD1B7918.jpg?v=1610722293&width=533', heels: '8cm,9.5cm', colors: 'negru-alb,negru,rosu', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/pantofi/products/pantofi-cu-toc-samantha-cu-funda-negru-alb' },
+  { category: 'Pantofi cu toc', model_id: 'daisy-argintii-rotund', name: 'Sandale Daisy Piele Naturala Varf Rotund Argintii', image_url: 'https://ginissima.ro/cdn/shop/products/DSC01431.jpg?v=1681287523&width=533', heels: '8cm,9.5cm', colors: 'argintiu,auriu,alb', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-daisy-varf-rotund-argintii' },
+  { category: 'Pantofi cu toc', model_id: 'thea-satin-negre', name: 'Sandale Thea Satin Negre', image_url: 'https://ginissima.ro/cdn/shop/products/12a_1_7fda36af-78df-48f9-bd2b-b0e779008a1d.jpg?v=1654002769&width=533', heels: '8cm,9.5cm', colors: 'negru,fucsia,rosu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-thea-satin-negre' },
+  { category: 'Pantofi cu toc', model_id: 'cleo-satin-albe-rotund', name: 'Sandale Cleo Satin Varf Rotund Albe', image_url: 'https://ginissima.ro/cdn/shop/products/450.jpg?v=1669029270&width=533', heels: '8cm,9.5cm', colors: 'alb,nude,negru', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-cleo-alb' },
+  { category: 'Pantofi cu toc', model_id: 'samantha-funda-negri', name: 'Pantofi Samantha cu Funda Piele Intoarsa Negri', image_url: 'https://ginissima.ro/cdn/shop/products/DD1B8477.jpg?v=1610722280&width=533', heels: '8cm,9.5cm,11cm', colors: 'negru,rosu,nude', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/pantofi/products/pantofi-cu-toc-samantha-cu-funda-negri' },
+  { category: 'Pantofi cu toc', model_id: 'thea-lac-rosii', name: 'Sandale Thea Piele Lacuita Rosii', image_url: 'https://ginissima.ro/cdn/shop/products/DD1B4716.jpg?v=1621091138&width=533', heels: '8cm,9.5cm', colors: 'rosu,negru,nude', materials: 'piele lacuita', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-thea-piele-naturala-rosii' },
+  { category: 'Pantofi cu toc', model_id: 'ana-satin-albi', name: 'Pantofi Ana Satin Albi', image_url: 'https://ginissima.ro/cdn/shop/products/1q_68.jpg?v=1612997631&width=533', heels: '8cm,9.5cm', colors: 'alb,nude,nude-auriu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi/products/pantofi-cu-toc-ana-albi' },
+  { category: 'Pantofi cu toc', model_id: 'samantha-v-negri', name: 'Pantofi Samantha in V Piele Intoarsa Negri', image_url: 'https://ginissima.ro/cdn/shop/products/IMG_2518.jpg?v=1647008398&width=533', heels: '8cm,9.5cm,11cm', colors: 'negru,nude,rosu', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/pantofi/products/pantofi-cu-toc-samantha-in-v-negri' },
+  { category: 'Pantofi cu toc', model_id: 'alice-stiletto-lac-negru', name: 'Pantofi Alice Stiletto Piele Lacuita Negri', image_url: 'https://ginissima.ro/cdn/shop/products/3_2.jpg?v=1610722125&width=533', heels: '9.5cm,11cm', colors: 'negru,rosu,nude', materials: 'piele lacuita', shopify_url: 'https://ginissima.ro/collections/pantofi/products/pantofi-cu-toc-alice-stiletto-lac-negru' },
+  { category: 'Pantofi cu toc', model_id: 'samantha-funda-rosii', name: 'Pantofi Samantha cu Funda Piele Intoarsa Rosii', image_url: 'https://ginissima.ro/cdn/shop/products/16.jpg?v=1610722265&width=533', heels: '8cm,9.5cm,11cm', colors: 'rosu,negru,nude', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/pantofi/products/pantofi-cu-toc-samantha-cu-funda-rosii' },
+  { category: 'Pantofi cu toc', model_id: 'alice-stiletto-bej-nude', name: 'Pantofi Alice Stiletto Piele Naturala Bej Nude', image_url: 'https://ginissima.ro/cdn/shop/products/8_2.jpg?v=1610722154&width=533', heels: '9.5cm,11cm', colors: 'nude,negru,rosu', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi/products/pantofi-cu-toc-alice-stiletto-bej-nude' },
+  { category: 'Pantofi cu toc', model_id: 'daisy-albe', name: 'Sandale Daisy Piele Naturala Varf Ascutit Albe', image_url: 'https://ginissima.ro/cdn/shop/products/DSC07415.jpg?v=1678447905&width=533', heels: '8cm,9.5cm', colors: 'alb,auriu,argintiu', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-daisy-white-varf-ascutit' },
+  { category: 'Pantofi cu toc', model_id: 'alice-stiletto-nude', name: 'Pantofi Alice Stiletto Piele Intoarsa Nude', image_url: 'https://ginissima.ro/cdn/shop/products/90.jpg?v=1667909114&width=533', heels: '9.5cm,11cm', colors: 'nude,negru,rosu', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/pantofi/products/pantofi-cu-toc-alice-stiletto-nude-2' },
+  { category: 'Pantofi cu toc', model_id: 'anya-satin-negre', name: 'Sandale Anya Satin Negre', image_url: 'https://ginissima.ro/cdn/shop/products/DD1B1221.jpg?v=1621880095&width=533', heels: '8cm,9.5cm', colors: 'negru,alb,nude', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-anya-negre' },
+
+  // ═══════════════════════════════════════════════════════════
+  // PANTOFI FARA TOC (24 products)
+  // ═══════════════════════════════════════════════════════════
+  { category: 'Pantofi fara toc', model_id: 'daisy-aurii-rotund-flat', name: 'Sandale Daisy Piele Naturala Varf Rotund Aurii', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06731.jpg?v=1686835415&width=533', heels: 'flat', colors: 'auriu,argintiu,alb', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/sandale-daisy-piele-naturala-varf-rotund-aurii' },
+  { category: 'Pantofi fara toc', model_id: 'adele-satin-negri', name: 'Papuci Adele Satin Negri', image_url: 'https://ginissima.ro/cdn/shop/products/DD1B9565.jpg?v=1618414238&width=533', heels: 'flat', colors: 'negru,rosu,multicolor', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/papuci-adele-negri' },
+  { category: 'Pantofi fara toc', model_id: 'balerini-alice-nude-negru', name: 'Balerini Alice Piele Naturala Nude-Negru', image_url: 'https://ginissima.ro/cdn/shop/files/DSC07786.jpg?v=1713362567&width=533', heels: 'flat', colors: 'nude-negru,negru,maro', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/balerini-alice-piele-naturala-nude-negru' },
+  { category: 'Pantofi fara toc', model_id: 'daisy-argintii-rotund-flat', name: 'Sandale Daisy Piele Naturala Varf Rotund Argintii', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06739.jpg?v=1686835263&width=533', heels: 'flat', colors: 'argintiu,auriu,alb', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/sandale-daisy-piele-naturala-varf-rotund-argintii' },
+  { category: 'Pantofi fara toc', model_id: 'balerini-alice-negri', name: 'Balerini Alice Piele Intoarsa Negri', image_url: 'https://ginissima.ro/cdn/shop/products/264.jpg?v=1669042371&width=533', heels: 'flat', colors: 'negru,gri,maro', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/balerini-alice-negri' },
+  { category: 'Pantofi fara toc', model_id: 'adele-multicolor', name: 'Papuci Adele Satin Multicolor', image_url: 'https://ginissima.ro/cdn/shop/products/9-_5_56abcd8c-96ca-4962-a90a-17fe547b45f2.jpg?v=1628530993&width=533', heels: 'flat', colors: 'multicolor,negru,rosu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/papuci-adele-rosii' },
+  { category: 'Pantofi fara toc', model_id: 'emily-auriu-rose', name: 'Papuci Emily Piele Naturala Auriu-Rose', image_url: 'https://ginissima.ro/cdn/shop/files/DSC08946.jpg?v=1689683848&width=533', heels: 'flat', colors: 'auriu-rose,auriu,argintiu', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/papuci-emily-piele-naturala-auriu-rose' },
+  { category: 'Pantofi fara toc', model_id: 'balerini-alice-v-camel', name: 'Balerini Alice in V Piele Intoarsa Camel', image_url: 'https://ginissima.ro/cdn/shop/files/DSC07737.jpg?v=1709125740&width=533', heels: 'flat', colors: 'camel,negru,maro', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/balerini-alice-in-v-piele-intoarsa-camel' },
+  { category: 'Pantofi fara toc', model_id: 'seline-aurii-flat', name: 'Sandale Seline Piele Naturala Aurii', image_url: 'https://ginissima.ro/cdn/shop/files/DSC08917.jpg?v=1689681152&width=533', heels: 'flat', colors: 'auriu,argintiu,alb', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/sandale-seline-piele-naturala-aurii' },
+  { category: 'Pantofi fara toc', model_id: 'balerini-ana-satin-nude', name: 'Balerini Ana Satin Nude', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06746.jpg?v=1686834776&width=533', heels: 'flat', colors: 'nude,alb,negru', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/balerini-ana-satin-nude' },
+  { category: 'Pantofi fara toc', model_id: 'vesa-satin-negri', name: 'Papuci Vesa Satin Negri', image_url: 'https://ginissima.ro/cdn/shop/products/10_3.jpg?v=1612631057&width=533', heels: 'flat', colors: 'negru,rosu,animal print', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/papuci-vesa' },
+  { category: 'Pantofi fara toc', model_id: 'sofia-negri', name: 'Papuci Sofia Piele Naturala Negri', image_url: 'https://ginissima.ro/cdn/shop/products/DD1B9560.jpg?v=1621161217&width=533', heels: 'flat', colors: 'negru,maro,nude', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/papuci-sofia-negri' },
+  { category: 'Pantofi fara toc', model_id: 'balerini-alice-gri', name: 'Balerini Alice Piele Intoarsa Gri', image_url: 'https://ginissima.ro/cdn/shop/products/314.jpg?v=1669042597&width=533', heels: 'flat', colors: 'gri,negru,maro', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/balerini-alice-gri' },
+  { category: 'Pantofi fara toc', model_id: 'vesa-animal-print', name: 'Papuci Vesa Satin Animal Print', image_url: 'https://ginissima.ro/cdn/shop/products/8-_2.jpg?v=1612622481&width=533', heels: 'flat', colors: 'animal print,negru,rosu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/papuci-vesa-satin-animal-print' },
+  { category: 'Pantofi fara toc', model_id: 'balerini-alice-v-albi', name: 'Balerini Alice in V Piele Naturala Albi', image_url: 'https://ginissima.ro/cdn/shop/files/DSC07763.jpg?v=1709125411&width=533', heels: 'flat', colors: 'alb,nude,negru', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/balerini-alice-in-v-piele-naturala-alb' },
+  { category: 'Pantofi fara toc', model_id: 'balerini-alice-v-fucsia', name: 'Balerini Alice in V Piele Intoarsa Fucsia', image_url: 'https://ginissima.ro/cdn/shop/products/DSC08383.jpg?v=1678375328&width=533', heels: 'flat', colors: 'fucsia,rosu,roz', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/balerini-alice-in-v-fucsia' },
+  { category: 'Pantofi fara toc', model_id: 'balerini-alice-nude', name: 'Balerini Alice Piele Naturala Nude', image_url: 'https://ginissima.ro/cdn/shop/files/DSC05994.jpg?v=1696254086&width=533', heels: 'flat', colors: 'nude,alb,negru', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/sandale-balerini-alice-piele-naturala-nude' },
+  { category: 'Pantofi fara toc', model_id: 'balerini-alice-portocalii', name: 'Balerini Alice Piele Naturala Decupati Lateral Portocalii', image_url: 'https://ginissima.ro/cdn/shop/products/20_7e600488-7af1-40cf-8b4b-b555d734259c.jpg?v=1667988421&width=533', heels: 'flat', colors: 'portocaliu,rosu,fucsia', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/balerini-alice-decupati-lateral-portocalii' },
+  { category: 'Pantofi fara toc', model_id: 'vesa-rosii', name: 'Papuci Vesa Satin Rosii', image_url: 'https://ginissima.ro/cdn/shop/products/9-_2.jpg?v=1612623076&width=533', heels: 'flat', colors: 'rosu,negru,fucsia', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/papuci-vesa-satin-rosii' },
+  { category: 'Pantofi fara toc', model_id: 'balerini-samantha-burgundy', name: 'Balerini Samantha Piele Intoarsa Burgundy', image_url: 'https://ginissima.ro/cdn/shop/files/DSC08136.jpg?v=1727176698&width=533', heels: 'flat', colors: 'burgundy,negru,rosu', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/balerini-samantha-piele-intoarsa-burgundy' },
+  { category: 'Pantofi fara toc', model_id: 'balerini-alice-maro', name: 'Balerini Alice Piele Naturala Maro', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06004.jpg?v=1696253657&width=533', heels: 'flat', colors: 'maro,negru,camel', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/balerini-alice-piele-naturala-maro' },
+  { category: 'Pantofi fara toc', model_id: 'cleo-mov-flat', name: 'Papuci Cleo Satin Mov', image_url: 'https://ginissima.ro/cdn/shop/files/DSC08912.jpg?v=1689684316&width=533', heels: 'flat', colors: 'mov,fucsia,roz', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/papuci-cleo-satin-mov' },
+  { category: 'Pantofi fara toc', model_id: 'balerini-samantha-funda-rosii', name: 'Balerini Samantha cu Funda Piele Intoarsa Rosii', image_url: 'https://ginissima.ro/cdn/shop/files/DSC07752.jpg?v=1713363153&width=533', heels: 'flat', colors: 'rosu,negru,burgundy', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/balerini-samantha-cu-funda-piele-intoarsa-rosii' },
+  { category: 'Pantofi fara toc', model_id: 'balerini-samantha-kaki', name: 'Balerini Samantha Piele Intoarsa Kaki', image_url: 'https://ginissima.ro/cdn/shop/files/DSC05999.jpg?v=1696255188&width=533', heels: 'flat', colors: 'kaki,maro,negru', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/balerini-samantha-piele-intoarsa-kaki' },
+
+  // ═══════════════════════════════════════════════════════════
+  // CIZME & GHETE (24 products)
+  // ═══════════════════════════════════════════════════════════
+  { category: 'Cizme & Ghete', model_id: 'botine-mia-elastica-negre', name: 'Botine Mia din Piele Elastica Negre', image_url: 'https://ginissima.ro/cdn/shop/products/8a_5_75d081df-7ecb-46e6-a0b1-859d52b146a1.jpg?v=1634909066&width=533', heels: '6cm,8cm', colors: 'negru,maro,burgundy', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/botine-mia-din-piele-elastica-negru' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-mia-peste-genunchi', name: 'Cizme Mia din Piele Elastica Peste Genunchi Negre', image_url: 'https://ginissima.ro/cdn/shop/products/7a_1.jpg?v=1634908041&width=533', heels: '6cm,8cm', colors: 'negru,maro', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-mia-peste-genunchi-negre' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-crete-eva30-negre', name: 'Cizme Crete Piele Naturala Eva 30 Negre', image_url: 'https://ginissima.ro/cdn/shop/products/4a_1_1b356017-80a3-4c7c-bfab-809716797736.jpg?v=1634824177&width=533', heels: '6cm,8cm', colors: 'negru,caramel,alb-murdar', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-crete-eva-30-negre' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-milana-negre', name: 'Cizme Lungi Milana Piele Naturala Negre', image_url: 'https://ginissima.ro/cdn/shop/products/DSC09876.jpg?v=1610722381&width=533', heels: '6cm,8cm', colors: 'negru,burgundy,maron', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-lungi-milana-negre' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-peste-genunchi-negre', name: 'Cizme peste genunchi Piele Intoarsa Negre', image_url: 'https://ginissima.ro/cdn/shop/products/DSC09893.jpg?v=1610722429&width=533', heels: '6cm,8cm', colors: 'negru,maron,gri', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-peste-genunchi-negre' },
+  { category: 'Cizme & Ghete', model_id: 'botine-mia-intoarsa-negre', name: 'Botine Mia din Piele Intoarsa Elastica Negre', image_url: 'https://ginissima.ro/cdn/shop/products/DD1B2163.jpg?v=1637064121&width=533', heels: '6cm,8cm', colors: 'negru,maro,burgundy', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/cizme/products/botine-mia-din-piele-intoarsa-elastica-negre' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-gloria-negre', name: 'Cizme Gloria Piele Intoarsa Sub Genunchi Negre', image_url: 'https://ginissima.ro/cdn/shop/files/DSC07811.jpg?v=1700748194&width=533', heels: '6cm,8cm', colors: 'negru,maro,gri', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-gloria-piele-intoarsa-sub-genunchi-negre' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-milana-burgundy', name: 'Cizme Lungi Milana Piele Naturala Burgundy', image_url: 'https://ginissima.ro/cdn/shop/files/DSC02470.jpg?v=1729074138&width=533', heels: '6cm,8cm', colors: 'burgundy,negru,maron', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-lungi-milana-piele-naturala-burgundy' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-milla-negre', name: 'Cizme Milla Piele Naturala Sub Genunchi Negre', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06026.jpg?v=1696941407&width=533', heels: '6cm,8cm', colors: 'negru,alb-murdar,maron-caramel,gri', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-milla-piele-naturala-sub-genunchi-negre' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-crete-eva30-caramel', name: 'Cizme Crete Piele Naturala Eva 30 Caramel', image_url: 'https://ginissima.ro/cdn/shop/products/2a_2_8bec34f4-0dbe-4b11-974c-0b281f870123.jpg?v=1634823013&width=533', heels: '6cm,8cm', colors: 'caramel,negru,alb-murdar', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-crete-eva-30-caramel' },
+  { category: 'Cizme & Ghete', model_id: 'botine-mia-intoarsa-maro', name: 'Botine Mia din Piele Intoarsa Elastica Maro', image_url: 'https://ginissima.ro/cdn/shop/products/DSC06407.jpg?v=1671621035&width=533', heels: '6cm,8cm', colors: 'maro,negru,burgundy', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/cizme/products/botine-mia-din-piele-intoarsa-elastica-maron' },
+  { category: 'Cizme & Ghete', model_id: 'botine-mia-burgundy', name: 'Botine Mia din Piele Intoarsa Elastica Burgundy', image_url: 'https://ginissima.ro/cdn/shop/files/DSC02496.jpg?v=1729073104&width=533', heels: '6cm,8cm', colors: 'burgundy,negru,maro', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/cizme/products/botine-mia-din-piele-intoarsa-elastica-burgundy-editie-limitata' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-gloria-maro', name: 'Cizme Gloria Piele Intoarsa Sub Genunchi Maro', image_url: 'https://ginissima.ro/cdn/shop/files/DSC08929.jpg?v=1702475522&width=533', heels: '6cm,8cm', colors: 'maro,negru,gri', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-gloria-piele-intoarsa-sub-genunchi-maro' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-milla-embosata-negre', name: 'Cizme Milla Piele Embosata Sub Genunchi Negre', image_url: 'https://ginissima.ro/cdn/shop/files/DSC02502.jpg?v=1728547507&width=533', heels: '6cm,8cm', colors: 'negru,maro', materials: 'piele embosata', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-ilona-piele-embosata-sub-genunchi-negre' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-norra-negre', name: 'Cizme Norra Piele Naturala Sub Genunchi Negre', image_url: 'https://ginissima.ro/cdn/shop/files/DSC02885.jpg?v=1707832256&width=533', heels: 'flat', colors: 'negru,maro', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-norra-piele-neagra' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-milana-maron', name: 'Cizme Lungi Milana Piele Intoarsa Maron', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06073.jpg?v=1696944451&width=533', heels: '6cm,8cm', colors: 'maron,negru,gri', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-lungi-milana-piele-intoarsa-maron' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-milla-alb-murdar', name: 'Cizme Milla Piele Naturala Sub Genunchi Alb-Murdar', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06045.jpg?v=1696941689&width=533', heels: '6cm,8cm', colors: 'alb-murdar,negru,gri', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-milla-piele-naturala-sub-genunchi-alb-unt' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-medeea-negre', name: 'Cizme Medeea Piele Naturala Peste Genunchi Negre', image_url: 'https://ginissima.ro/cdn/shop/files/DSC02890.jpg?v=1707833209&width=533', heels: '6cm,8cm', colors: 'negru,maron', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-medeea-peste-genunchi-piele-naturala-neagra' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-crete-eva40-maron', name: 'Cizme Crete Piele Naturala Eva 40 Maron Metalizat', image_url: 'https://ginissima.ro/cdn/shop/products/c_9.jpg?v=1635778697&width=533', heels: '6cm,8cm', colors: 'maron,negru,caramel', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/eva-cizme-crete-metalice-40-maron-metalizat' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-crete-eva30-alb', name: 'Cizme Crete Piele Naturala Eva 30 Alb-Murdar', image_url: 'https://ginissima.ro/cdn/shop/products/DD1B8882.jpg?v=1634823559&width=533', heels: '6cm,8cm', colors: 'alb-murdar,negru,caramel', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-crete-eva-30-alb-unt' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-milla-gri', name: 'Cizme Milla Piele Naturala Sub Genunchi Gri', image_url: 'https://ginissima.ro/cdn/shop/files/DSC02491.jpg?v=1729073842&width=533', heels: '6cm,8cm', colors: 'gri,negru,maron', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-milla-piele-naturala-sub-genunchi-gri-1' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-ilona-maro-inchis', name: 'Cizme Ilona Piele Embosata Sub Genunchi Maro Inchis', image_url: 'https://ginissima.ro/cdn/shop/files/DSC07796.jpg?v=1700130384&width=533', heels: '6cm,8cm', colors: 'maro inchis,negru', materials: 'piele embosata', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-ilona-piele-embosata-sub-genunchi-maron-inchis' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-milla-maron-caramel', name: 'Cizme Milla Piele Naturala Sub Genunchi Maron-Caramel', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06031.jpg?v=1696941939&width=533', heels: '6cm,8cm', colors: 'maron-caramel,negru,gri', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-milla-piele-naturala-sub-genunchi-maron' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-v-negre', name: 'Cizme in V Piele Intoarsa Sub Genunchi Negre', image_url: 'https://ginissima.ro/cdn/shop/products/6a_1_73afda38-354c-47aa-bf5e-a9ea449548e0.jpg?v=1634903502&width=533', heels: '6cm,8cm', colors: 'negru,maron,gri', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-in-v-sub-genunchi-negre' },
+
+  // ═══════════════════════════════════════════════════════════
+  // NUNTA & EVENIMENT (24 products)
+  // ═══════════════════════════════════════════════════════════
+  { category: 'Nunta & Eveniment', model_id: 'alice-silicon-nunta', name: 'Pantofi Alice Silicon Editie Limitata', image_url: 'https://ginissima.ro/cdn/shop/products/7-_2.jpg?v=1612624584&width=533', heels: '8cm,9.5cm,11cm', colors: 'transparent', materials: 'silicon', shopify_url: 'https://ginissima.ro/collections/nunta/products/pantofi-cu-toc-alice-silicon-editie-limitata' },
+  { category: 'Nunta & Eveniment', model_id: 'cleo-nude-auriu-nunta', name: 'Sandale Cleo Satin Varf Ascutit Nude-Auriu', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06693.jpg?v=1686828209&width=533', heels: '8cm,9.5cm', colors: 'nude-auriu,alb,gri-argintiu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-cleo-satin-varf-ascutit-nude-auriu' },
+  { category: 'Nunta & Eveniment', model_id: 'cleo-alb-nunta', name: 'Sandale Cleo Satin Varf Ascutit Alb', image_url: 'https://ginissima.ro/cdn/shop/files/DSC05988_829a0b62-26b3-4f5a-958b-ecefab2582a7.jpg?v=1736944189&width=533', heels: '8cm,9.5cm', colors: 'alb,nude,nude-auriu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-cleo-satin-varf-ascutit-alb' },
+  { category: 'Nunta & Eveniment', model_id: 'thea-auriu-nunta', name: 'Sandale Thea Piele Naturala Auriu Cracke', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06656.jpg?v=1686815703&width=533', heels: '8cm,9.5cm', colors: 'auriu,argintiu,nude', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-thea-piele-naturala-auriu-cracke' },
+  { category: 'Nunta & Eveniment', model_id: 'seline-argintii-nunta', name: 'Sandale Seline Piele Naturala Argintii', image_url: 'https://ginissima.ro/cdn/shop/products/IMG_2601-Recovered.jpg?v=1649771545&width=533', heels: '8cm,9.5cm', colors: 'argintiu,auriu,alb', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-seline-piele-naturala-argintii' },
+  { category: 'Nunta & Eveniment', model_id: 'daisy-argintii-nunta', name: 'Sandale Daisy Piele Naturala Varf Rotund Argintii', image_url: 'https://ginissima.ro/cdn/shop/products/DSC01431.jpg?v=1681287523&width=533', heels: '8cm,9.5cm', colors: 'argintiu,auriu,alb', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-daisy-varf-rotund-argintii' },
+  { category: 'Nunta & Eveniment', model_id: 'cleo-albe-rotund-nunta', name: 'Sandale Cleo Satin Varf Rotund Albe', image_url: 'https://ginissima.ro/cdn/shop/products/450.jpg?v=1669029270&width=533', heels: '8cm,9.5cm', colors: 'alb,nude,gri-argintiu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-cleo-alb' },
+  { category: 'Nunta & Eveniment', model_id: 'ana-albi-nunta', name: 'Pantofi Ana Satin Albi', image_url: 'https://ginissima.ro/cdn/shop/products/1q_68.jpg?v=1612997631&width=533', heels: '8cm,9.5cm', colors: 'alb,nude,nude-auriu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/nunta/products/pantofi-cu-toc-ana-albi' },
+  { category: 'Nunta & Eveniment', model_id: 'daisy-aurii-rotund-nunta', name: 'Sandale Daisy Piele Naturala Varf Rotund Aurii', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06731.jpg?v=1686835415&width=533', heels: 'flat', colors: 'auriu,argintiu,alb', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-daisy-piele-naturala-varf-rotund-aurii' },
+  { category: 'Nunta & Eveniment', model_id: 'daisy-albe-nunta', name: 'Sandale Daisy Piele Naturala Varf Ascutit Albe', image_url: 'https://ginissima.ro/cdn/shop/products/DSC07415.jpg?v=1678447905&width=533', heels: '8cm,9.5cm', colors: 'alb,auriu,argintiu', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-daisy-white-varf-ascutit' },
+  { category: 'Nunta & Eveniment', model_id: 'cleo-gri-argintiu-nunta', name: 'Sandale Cleo Satin Varf Ascutit Gri-Argintiu', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06670.jpg?v=1686829046&width=533', heels: '8cm,9.5cm', colors: 'gri-argintiu,alb,nude', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-cleo-satin-varf-ascutit-gri-argintiu' },
+  { category: 'Nunta & Eveniment', model_id: 'alice-satin-nisip-nunta', name: 'Pantofi Alice Satin Nisip', image_url: 'https://ginissima.ro/cdn/shop/products/13A_1_8c242996-d30f-43d7-800b-f02953f7c519.jpg?v=1656507408&width=533', heels: '8cm,9.5cm', colors: 'nisip,alb,nude', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/nunta/products/pantofi-cu-toc-alice-satin' },
+  { category: 'Nunta & Eveniment', model_id: 'gaia-nude-rose-nunta', name: 'Sandale Gaia Piele Naturala Nude Rose', image_url: 'https://ginissima.ro/cdn/shop/products/DSC01470.jpg?v=1681287231&width=533', heels: '8cm,9.5cm', colors: 'nude rose,alb,auriu', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-gaia-piele-naturala-nude-rose' },
+  { category: 'Nunta & Eveniment', model_id: 'thea-albe-nunta', name: 'Sandale Thea Piele Naturala Albe', image_url: 'https://ginissima.ro/cdn/shop/products/DSC01439.jpg?v=1681286722&width=533', heels: '8cm,9.5cm', colors: 'alb,nude,auriu', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-thea-white' },
+  { category: 'Nunta & Eveniment', model_id: 'cleo-nude-rotund-nunta', name: 'Sandale Cleo Satin Varf Rotund Nude', image_url: 'https://ginissima.ro/cdn/shop/products/DSC08259.jpg?v=1678369545&width=533', heels: '8cm,9.5cm', colors: 'nude,alb,gri-argintiu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-cleo-nude' },
+  { category: 'Nunta & Eveniment', model_id: 'francesca-aurii-nunta', name: 'Sandale Francesca Piele Naturala Aurii', image_url: 'https://ginissima.ro/cdn/shop/products/DSC01449.jpg?v=1681286214&width=533', heels: '8cm,9.5cm', colors: 'auriu,argintiu,alb', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-francesca-aurii' },
+  { category: 'Nunta & Eveniment', model_id: 'bianca-platforma-albe-nunta', name: 'Sandale Bianca cu Platforma Piele Naturala Albe', image_url: 'https://ginissima.ro/cdn/shop/products/DD1B1565.jpg?v=1651229940&width=533', heels: '8cm,9.5cm', colors: 'alb,nude,auriu', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-bianca-cu-platforma-albe' },
+  { category: 'Nunta & Eveniment', model_id: 'ana-nude-auriu-nunta', name: 'Pantofi Ana Satin Nude-Auriu', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06700.jpg?v=1686815978&width=533', heels: '8cm,9.5cm', colors: 'nude-auriu,alb,nude', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/nunta/products/pantofi-ana-satin-nude-auriu' },
+  { category: 'Nunta & Eveniment', model_id: 'samantha-v-nude-nunta', name: 'Pantofi Samantha in V Piele Lacuita Nude', image_url: 'https://ginissima.ro/cdn/shop/products/IMG_2544-Recovered.jpg?v=1649249468&width=533', heels: '8cm,9.5cm', colors: 'nude,alb,negru', materials: 'piele lacuita', shopify_url: 'https://ginissima.ro/collections/nunta/products/pantofi-cu-toc-samantha-in-v-nude' },
+  { category: 'Nunta & Eveniment', model_id: 'samantha-iii-albi-nunta', name: 'Pantofi Samantha III Piele Sidefata Albi', image_url: 'https://ginissima.ro/cdn/shop/products/DD1B0091.jpg?v=1656424305&width=533', heels: '8cm,9.5cm', colors: 'alb,nude,argintiu', materials: 'piele sidefata', shopify_url: 'https://ginissima.ro/collections/nunta/products/pantofi-cu-toc-samantha-iii-albi' },
+  { category: 'Nunta & Eveniment', model_id: 'daisy-argintii-flat-nunta', name: 'Sandale Daisy Piele Naturala Varf Rotund Argintii', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06739.jpg?v=1686835263&width=533', heels: 'flat', colors: 'argintiu,auriu,alb', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-daisy-piele-naturala-varf-rotund-argintii' },
+  { category: 'Nunta & Eveniment', model_id: 'rose-platforma-alb-negru-nunta', name: 'Sandale Rose cu Platforma Piele Naturala Alb/Negru', image_url: 'https://ginissima.ro/cdn/shop/products/IMG_2673-Recovered.jpg?v=1649684799&width=533', heels: '8cm,9.5cm', colors: 'alb-negru,alb,negru', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-rose-albe-cu-platforma-piele-naturala' },
+  { category: 'Nunta & Eveniment', model_id: 'balerini-ana-nude-nunta', name: 'Balerini Ana Satin Nude', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06746.jpg?v=1686834776&width=533', heels: 'flat', colors: 'nude,alb,auriu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/nunta/products/balerini-ana-satin-nude' },
+  { category: 'Nunta & Eveniment', model_id: 'daisy-argintii-ascutit-nunta', name: 'Sandale Daisy Piele Naturala Varf Ascutit Argintii', image_url: 'https://ginissima.ro/cdn/shop/files/DSC02459.jpg?v=1728478746&width=533', heels: '8cm,9.5cm', colors: 'argintiu,auriu,alb', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-daisy-piele-naturala-varf-ascutit-argintii' },
+];
+
+// ══════════════════════════════════════════════════════════════
+// REFERENCE DATA — Matches Ginissima's product options
+// ══════════════════════════════════════════════════════════════
+const HEELS = [
+  { id:'flat', label:'Plat', height:'0–2 cm', visual:'completely flat sole with no heel piece at all' },
+  { id:'6cm', label:'6 cm', height:'6 cm', visual:'a low-mid heel approximately 6 cm tall, keeping the same heel shape/style as the original' },
+  { id:'8cm', label:'8 cm', height:'8 cm', visual:'a medium heel approximately 8 cm tall, keeping the same heel shape/style as the original' },
+  { id:'9.5cm', label:'9.5 cm', height:'9.5 cm', visual:'a high heel approximately 9.5 cm tall, keeping the same heel shape/style as the original' },
+  { id:'11cm', label:'11 cm', height:'11 cm', visual:'a very high stiletto heel approximately 11 cm tall' },
+];
+const MATERIALS = [
+  { id:'piele naturala', label:'Piele Naturală', texture:'smooth polished natural leather with subtle grain' },
+  { id:'piele intoarsa', label:'Piele Întoarsă', texture:'soft brushed suede leather with velvety nap' },
+  { id:'satin', label:'Satin', texture:'luxurious satin fabric with soft elegant sheen' },
+  { id:'catifea', label:'Catifea', texture:'rich velvet with deep pile texture' },
+  { id:'piele lacuita', label:'Lac (Patent)', texture:'high-gloss patent leather with mirror-like shine' },
+  { id:'plasa', label:'Plasă', texture:'delicate mesh fabric with subtle transparency' },
+  { id:'piele embosata', label:'Piele Embosată', texture:'embossed leather with textured pattern' },
+  { id:'piele sidefata', label:'Piele Sidefată', texture:'pearlescent iridescent leather with subtle shimmer' },
+  { id:'silicon', label:'Silicon', texture:'transparent flexible silicon material' },
+];
+const COLORS = [
+  { id:'negru', label:'Negru', hex:'#1a1a1a', desc:'jet black' },
+  { id:'alb', label:'Alb', hex:'#f5f0eb', desc:'pristine white' },
+  { id:'rosu', label:'Roșu', hex:'#c41e3a', desc:'bold crimson red' },
+  { id:'roz', label:'Roz', hex:'#de9b9b', desc:'soft blush pink' },
+  { id:'lila', label:'Lila', hex:'#9b7bb8', desc:'elegant lilac purple' },
+  { id:'nude', label:'Nude', hex:'#d4a984', desc:'warm nude beige' },
+  { id:'burgundy', label:'Burgundy', hex:'#6b1c2a', desc:'rich burgundy wine' },
+  { id:'emerald', label:'Verde Smarald', hex:'#1a6b4a', desc:'vivid emerald green' },
+  { id:'aqua', label:'Aqua', hex:'#5f9ea0', desc:'fresh aqua blue-green' },
+  { id:'auriu', label:'Auriu', hex:'#c9a84c', desc:'metallic gold' },
+  { id:'argintiu', label:'Argintiu', hex:'#a8a9ad', desc:'brushed silver metallic' },
+  { id:'vanilla', label:'Vanilla', hex:'#f3e5ab', desc:'soft vanilla cream' },
+  { id:'fucsia', label:'Fucsia', hex:'#ff1493', desc:'vibrant fuchsia pink' },
+  { id:'nude-auriu', label:'Nude-Auriu', hex:'#d4b896', desc:'warm nude with golden shimmer' },
+  { id:'gri-argintiu', label:'Gri-Argintiu', hex:'#9ca3af', desc:'silver-grey metallic' },
+  { id:'gri', label:'Gri', hex:'#6b7280', desc:'sophisticated grey' },
+  { id:'maro', label:'Maro', hex:'#8b4513', desc:'rich brown' },
+  { id:'camel', label:'Camel', hex:'#c19a6b', desc:'warm camel tan' },
+  { id:'caramel', label:'Caramel', hex:'#a67b5b', desc:'warm caramel brown' },
+  { id:'kaki', label:'Kaki', hex:'#6b8e23', desc:'olive khaki green' },
+  { id:'mov', label:'Mov', hex:'#7b68ee', desc:'elegant purple' },
+  { id:'portocaliu', label:'Portocaliu', hex:'#ff7f50', desc:'vibrant orange' },
+  { id:'transparent', label:'Transparent', hex:'rgba(200,200,200,0.3)', desc:'clear transparent' },
+  { id:'alb-murdar', label:'Alb-Murdar', hex:'#f5f5dc', desc:'off-white cream' },
+  { id:'maron', label:'Maron', hex:'#5d4037', desc:'dark brown' },
+];
+const OCCASIONS = [
+  { id:'nunta', label:'Nuntă', icon:'💒', scene:'an elegant luxury wedding venue with floral arrangements and romantic lighting', outfit:'an elegant floor-length bridal or formal gown' },
+  { id:'cocktail', label:'Cocktail', icon:'🍸', scene:'a sophisticated upscale cocktail lounge in Bucharest', outfit:'a chic knee-length cocktail dress' },
+  { id:'gala', label:'Gală', icon:'🎭', scene:'a grand opulent ballroom with crystal chandeliers', outfit:'a stunning floor-length evening gown' },
+  { id:'casual', label:'Casual Chic', icon:'☀️', scene:'a sunny European city street with elegant cafés and cobblestones', outfit:'stylish casual wear, designer jeans and a blazer' },
+  { id:'office', label:'Business', icon:'💼', scene:'a modern sleek corporate office lobby with glass and marble', outfit:'a tailored professional business suit or elegant pencil skirt' },
+  { id:'date', label:'Seară Romantică', icon:'🌹', scene:'an intimate candlelit upscale restaurant with warm ambiance', outfit:'a sophisticated fitted dress' },
+];
+
+// ══════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════
+let products = [];
+let selectedCategory = null;
+let selectedProduct = null;
+let selectedHeel = null;
+let selectedMaterial = null;
+let selectedColor = null;
+let selectedOccasion = null;
+let apiKey = localStorage.getItem('gemini_api_key') || '';
+let apiKeySource = apiKey ? 'saved' : '';
+let loading = { product: false, model: false };
+let lastProductImageB64 = null;
+let productImageB64 = null; // Loaded from selected product
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', async () => {
+  updateApiStatus();
+  await loadProducts();
+  updateCategoryCounts();
+  initSearch();
+  
+  // File input for API key
+  document.getElementById('key-file').addEventListener('change', (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      loadApiKeyFromFile(file);
+      e.target.value = ''; // Reset so same file can be loaded again
+    }
+  });
+});
+
+async function loadProducts() {
+  // Try Google Sheets first (works when deployed, not locally due to CORS)
+  if (SHEET_CSV_URL && window.location.protocol !== 'file:') {
+    try {
+      console.log('Fetching from Google Sheets...');
+      const resp = await fetch(SHEET_CSV_URL);
+      if (resp.ok) {
+        const csv = await resp.text();
+        const parsed = parseCSV(csv);
+        if (parsed.length > 0) {
+          products = parsed;
+          console.log(`Loaded ${products.length} products from Google Sheets`);
+          return;
+        }
+      }
+    } catch (err) {
+      console.log('Google Sheets fetch failed, using embedded data');
+    }
+  }
+  // Fallback to embedded data
+  products = SAMPLE_PRODUCTS;
+  console.log(`Loaded ${products.length} embedded products`);
+}
+
+function parseCSV(csv) {
+  const lines = csv.trim().split('\n');
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/[^a-z_]/g, ''));
+  return lines.slice(1).map(line => {
+    // Handle quoted values with commas inside
+    const values = [];
+    let current = '';
+    let inQuotes = false;
+    for (let char of line) {
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        values.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    values.push(current.trim());
+    
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = (values[i] || '').trim().replace(/^"|"$/g, ''); });
+    return obj;
+  }).filter(p => p.model_id && p.name);
+}
+
+function updateCategoryCounts() {
+  const categories = ['Pantofi cu toc', 'Pantofi fara toc', 'Cizme & Ghete', 'Nunta & Eveniment'];
+  categories.forEach(cat => {
+    const count = products.filter(p => p.category === cat).length;
+    const id = cat.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
+    const el = document.getElementById(`count-${id}`);
+    if (el) el.textContent = count > 0 ? count : '';
+  });
+}
+
+function selectCategory(category) {
+  selectedCategory = category;
+  
+  // Update button states
+  document.querySelectorAll('.category-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.category === category);
+  });
+  
+  // Show product list
+  document.getElementById('category-list').style.display = 'none';
+  document.getElementById('product-list-section').style.display = 'flex';
+  document.getElementById('current-category').textContent = category;
+  
+  // Render products for this category
+  renderCatalog();
+}
+
+function showCategories() {
+  selectedCategory = null;
+  document.getElementById('category-list').style.display = 'flex';
+  document.getElementById('product-list-section').style.display = 'none';
+  document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+}
+
+function renderCatalog(filter = '') {
+  const grid = document.getElementById('catalog-grid');
+  
+  // Filter by category first, then by search
+  let filtered = products;
+  if (selectedCategory) {
+    filtered = filtered.filter(p => p.category === selectedCategory);
+  }
+  if (filter) {
+    filtered = filtered.filter(p =>
+      p.name.toLowerCase().includes(filter.toLowerCase()) ||
+      p.model_id.toLowerCase().includes(filter.toLowerCase())
+    );
+  }
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="catalog-loading">Nu s-au găsit modele</div>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map(p => `
+    <div class="model-card ${selectedProduct?.model_id === p.model_id ? 'selected' : ''}" onclick="selectProduct('${p.model_id}')">
+      <div class="model-img-wrap">
+        <img src="${p.image_url}" alt="${p.name}">
+      </div>
+      <div class="model-info">
+        <div class="model-name">${p.name}</div>
+        <div class="model-tags">
+          ${(p.heels || '').split(',').filter(Boolean).slice(0,3).map(h => `<span class="model-tag heel">${h.trim()}</span>`).join('')}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function initSearch() {
+  document.getElementById('catalog-search').addEventListener('input', (e) => {
+    renderCatalog(e.target.value);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// PRODUCT SELECTION
+// ══════════════════════════════════════════════════════════════
+async function selectProduct(modelId) {
+  selectedProduct = products.find(p => p.model_id === modelId);
+  if (!selectedProduct) return;
+
+  // Reset selections
+  selectedHeel = null;
+  selectedMaterial = null;
+  selectedColor = null;
+  selectedOccasion = null;
+  lastProductImageB64 = null;
+  productImageB64 = null;
+
+  // Update catalog UI
+  renderCatalog(document.getElementById('catalog-search').value);
+
+  // Show simulator
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('simulator-ui').style.display = 'block';
+  document.getElementById('sim-model-name').textContent = selectedProduct.name;
+
+  // Build dynamic options
+  buildHeelOptions();
+  buildMaterialOptions();
+  buildColorOptions();
+  buildOccasionOptions();
+
+  // Hide results & order
+  document.getElementById('results-section').classList.remove('visible');
+  document.getElementById('order-section').classList.remove('visible');
+  setResultState('product', 'empty');
+  setResultState('model', 'empty');
+
+  // Load product image as base64
+  await loadProductImage();
+
+  updateGenButton();
+}
+
+async function loadProductImage() {
+  try {
+    const resp = await fetch(selectedProduct.image_url);
+    const blob = await resp.blob();
+    productImageB64 = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
+  } catch (err) {
+    console.error('Failed to load product image:', err);
+    productImageB64 = null;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// BUILD OPTIONS (filtered by product availability)
+// ══════════════════════════════════════════════════════════════
+function buildHeelOptions() {
+  const available = (selectedProduct.heels || '').split(',').map(s => s.trim().toLowerCase());
+  const row = document.getElementById('heel-row');
+  row.innerHTML = HEELS.map(h => {
+    const enabled = available.includes(h.id);
+    const svgH = { flat:2, low:8, mid:16, high:24, stiletto:33 }[h.id];
+    return `
+      <button class="heel-btn ${enabled ? '' : 'disabled'}" data-id="${h.id}" ${enabled ? `onclick="selectHeel('${h.id}')"` : ''}>
+        <svg width="40" height="36" viewBox="0 0 40 36" fill="none">
+          <path d="M4,${34-svgH} Q4,${32-svgH} 6,${32-svgH} L26,${32-svgH} Q30,${32-svgH} 31,${34-svgH+2} L34,34 L30,34 L28,${34-svgH+4} L6,${34-svgH+4} Q4,${34-svgH+4} 4,${34-svgH} Z" fill="#555"/>
+          ${svgH > 5 ? `<rect x="31" y="${34-svgH+2}" width="3" height="${svgH-2}" rx="1.5" fill="#555"/>` : ''}
+        </svg>
+        <span class="label">${h.label}</span>
+        <span class="sub">${h.height}</span>
+      </button>`;
+  }).join('');
+}
+
+function buildMaterialOptions() {
+  const available = (selectedProduct.materials || '').split(',').map(s => s.trim().toLowerCase());
+  const row = document.getElementById('material-row');
+  row.innerHTML = MATERIALS.map(m => {
+    const enabled = available.includes(m.id);
+    return `<button class="chip ${enabled ? '' : 'disabled'}" data-id="${m.id}" ${enabled ? `onclick="selectMaterial('${m.id}')"` : ''}>${m.label}</button>`;
+  }).join('');
+}
+
+function buildColorOptions() {
+  const available = (selectedProduct.colors || '').split(',').map(s => s.trim().toLowerCase());
+  const row = document.getElementById('color-row');
+  row.innerHTML = COLORS.map(c => {
+    const enabled = available.includes(c.id);
+    return `<button class="swatch ${enabled ? '' : 'disabled'}" data-id="${c.id}" style="background:${c.hex}" title="${c.label}" ${enabled ? `onclick="selectColor('${c.id}')"` : ''}></button>`;
+  }).join('');
+  document.getElementById('color-label').textContent = '';
+}
+
+function buildOccasionOptions() {
+  const row = document.getElementById('occasion-row');
+  row.innerHTML = OCCASIONS.map(o => `
+    <button class="occ-card" data-id="${o.id}" onclick="selectOccasion('${o.id}')">
+      <span class="emoji">${o.icon}</span>
+      <span class="label">${o.label}</span>
+    </button>
+  `).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+// SELECTION HANDLERS
+// ══════════════════════════════════════════════════════════════
+function selectHeel(id) {
+  selectedHeel = HEELS.find(h => h.id === id);
+  document.querySelectorAll('.heel-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.id === id);
+    const paths = b.querySelectorAll('path, rect');
+    paths.forEach(p => p.setAttribute('fill', b.dataset.id === id ? '#f5f0eb' : '#555'));
+  });
+  updateGenButton();
+}
+
+function selectMaterial(id) {
+  selectedMaterial = MATERIALS.find(m => m.id === id);
+  document.querySelectorAll('.chip').forEach(b => b.classList.toggle('active', b.dataset.id === id));
+  updateGenButton();
+}
+
+function selectColor(id) {
+  selectedColor = COLORS.find(c => c.id === id);
+  document.querySelectorAll('.swatch').forEach(b => {
+    b.classList.toggle('active', b.dataset.id === id);
+    b.style.boxShadow = b.dataset.id === id ? `0 0 14px ${COLORS.find(c=>c.id===id).hex}66` : 'none';
+  });
+  document.getElementById('color-label').textContent = selectedColor ? `Selected: ${selectedColor.label}` : '';
+  updateGenButton();
+}
+
+function selectOccasion(id) {
+  selectedOccasion = OCCASIONS.find(o => o.id === id);
+  document.querySelectorAll('.occ-card').forEach(b => b.classList.toggle('active', b.dataset.id === id));
+  updateGenButton();
+}
+
+function updateGenButton() {
+  const ready = selectedProduct && productImageB64 && selectedHeel && selectedMaterial && selectedColor && selectedOccasion && apiKey;
+  const btn = document.getElementById('gen-btn');
+  const hint = document.getElementById('gen-hint');
+  btn.disabled = !ready || loading.product || loading.model;
+  btn.className = ready ? 'gen-btn ready' : 'gen-btn';
+  
+  if (!apiKey) {
+    hint.textContent = 'Enter API key first (click 🔑 above)';
+  } else if (!selectedHeel || !selectedMaterial || !selectedColor || !selectedOccasion) {
+    hint.textContent = 'Select all options above';
+  } else if (!productImageB64) {
+    hint.textContent = 'Loading product image...';
+  } else {
+    hint.style.display = 'none';
+  }
+  hint.style.display = ready ? 'none' : '';
+}
+
+// ══════════════════════════════════════════════════════════════
+// API KEY
+// ══════════════════════════════════════════════════════════════
+function showApiModal() {
+  document.getElementById('api-key-input').value = '';
+  document.getElementById('api-modal').classList.add('visible');
+}
+function hideApiModal() {
+  document.getElementById('api-modal').classList.remove('visible');
+}
+function saveApiKey() {
+  const inputKey = document.getElementById('api-key-input').value.trim();
+  if (inputKey) {
+    apiKey = inputKey;
+    apiKeySource = 'manual';
+    localStorage.setItem('gemini_api_key', apiKey);
+    updateApiStatus();
+    hideApiModal();
+    updateGenButton();
+  }
+}
+function loadApiKeyFromFile(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    let key = e.target.result.trim().split('\n')[0];
+    // Handle common formats: GEMINI_API_KEY=xxx, "xxx", etc.
+    key = key.replace(/^(GEMINI_API_KEY|GOOGLE_API_KEY|API_KEY)\s*=\s*/, '').replace(/['"]/g, '').trim();
+    if (key) {
+      apiKey = key;
+      apiKeySource = 'file';
+      localStorage.setItem('gemini_api_key', apiKey);
+      updateApiStatus();
+      hideApiModal();
+      updateGenButton();
+    }
+  };
+  reader.readAsText(file);
+}
+function updateApiStatus() {
+  const status = document.getElementById('api-status');
+  if (apiKey) {
+    status.style.display = '';
+    status.textContent = apiKeySource === 'file' ? '✓ Key loaded from file' : '✓ API Ready';
+  } else {
+    status.style.display = 'none';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// GENERATION
+// ══════════════════════════════════════════════════════════════
+async function callGeminiMultiTurn(messages) {
+  const resp = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent?key=${apiKey}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: messages,
+        generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
+      }),
+    }
+  );
+  if (!resp.ok) {
+    const errText = await resp.text();
+    throw new Error(`API ${resp.status}: ${errText.substring(0, 200)}`);
+  }
+  const data = await resp.json();
+  const candidate = data.candidates?.[0];
+  if (!candidate) throw new Error('No response from API');
+  if (candidate.finishReason === 'SAFETY') throw new Error('Blocked by safety filters');
+
+  let imgData = null, textData = '';
+  for (const part of candidate.content?.parts || []) {
+    if (part.inlineData?.data) imgData = part.inlineData.data;
+    if (part.text) textData += part.text + '\n';
+  }
+  return { image: imgData, text: textData.trim() };
+}
+
+function setResultState(type, state, data = {}) {
+  const wrap = document.getElementById(`${type}-img-wrap`);
+  const regenBtn = document.getElementById(`${type}-regen`);
+
+  if (state === 'loading') {
+    wrap.innerHTML = `
+      <div class="result-loading">
+        <div class="spinner"></div>
+        <div class="progress-text">${data.progress || 'Generating...'}</div>
+        <div class="shimmer-bar"><div class="shimmer-fill"></div></div>
+      </div>`;
+    regenBtn.style.display = 'none';
+  } else if (state === 'image') {
+    wrap.innerHTML = `<img src="data:image/png;base64,${data.image}" alt="${type}">`;
+    regenBtn.style.display = '';
+  } else if (state === 'empty') {
+    const icon = type === 'product' ? '👟' : '👩';
+    wrap.innerHTML = `<div class="result-empty"><span class="icon">${icon}</span><span class="text">Awaiting</span></div>`;
+    regenBtn.style.display = 'none';
+  }
+}
+
+async function generateOne(type) {
+  loading[type] = true;
+  updateGenButton();
+  document.getElementById('error-box').style.display = 'none';
+  document.getElementById('results-section').classList.add('visible');
+
+  const mime = productImageB64.startsWith('data:image/png') ? 'image/png' : 'image/jpeg';
+  const rawB64 = productImageB64.split(',')[1];
+
+  // Heel guidance — only changes height, preserves original heel shape
+  const heelGuide = selectedHeel.id === 'flat'
+    ? 'Remove the heel completely — flat sole with zero elevation.'
+    : selectedHeel.id === 'low'
+    ? 'Adjust heel height to 2–4 cm, keeping the SAME heel shape as original.'
+    : selectedHeel.id === 'mid'
+    ? 'Adjust heel height to 5–7 cm, keeping the SAME heel shape as original.'
+    : selectedHeel.id === 'high'
+    ? 'Adjust heel height to 8–10 cm, keeping the SAME heel shape as original.'
+    : 'Adjust to 11+ cm needle-thin stiletto.';
+
+  try {
+    if (type === 'product') {
+      setResultState(type, 'loading', { progress: 'Analyzing shoe...' });
+
+      const turn1Messages = [{
+        role: 'user',
+        parts: [
+          { inlineData: { mimeType: mime, data: rawB64 } },
+          { text: `Study this shoe. Describe its structural details: silhouette, back/strap construction (slingback? pump?), toe shape, cutline of upper, d'Orsay opening if any, buckle/hardware, heel shape/form (block? tapered?), sole profile. Under 100 words. Do NOT describe color or material.` }
+        ]
+      }];
+
+      const turn1Result = await callGeminiMultiTurn(turn1Messages);
+      const shoeAnalysis = turn1Result.text || 'shoe structure analyzed';
+
+      setResultState(type, 'loading', { progress: 'Generating product shot...' });
+
+      const turn2Messages = [
+        turn1Messages[0],
+        { role: 'model', parts: [{ text: shoeAnalysis }] },
+        {
+          role: 'user',
+          parts: [
+            { inlineData: { mimeType: mime, data: rawB64 } },
+            { text: `Your analysis above is a BINDING CONTRACT. DO NOT CHANGE:
+• BACK: If slingback, output MUST be slingback. Do NOT make it a pump.
+• HEEL SHAPE: Keep same form (block stays block, etc). Only height changes.
+• TOE/CUTLINE/HARDWARE: Preserve exactly.
+
+CHANGES TO APPLY:
+1. HEEL HEIGHT: ${heelGuide}
+2. COLOR: ${selectedColor.desc}
+3. MATERIAL: ${selectedMaterial.texture}
+
+Output: Professional e-commerce photo, same angle as reference, off-white background, sharp focus. No text/watermarks.` }
+          ]
+        }
+      ];
+
+      const result = await callGeminiMultiTurn(turn2Messages);
+      if (result.image) {
+        lastProductImageB64 = result.image;
+        setResultState(type, 'image', { image: result.image });
+      } else {
+        throw new Error('No image generated');
+      }
+
+    } else {
+      // Model shot
+      setResultState(type, 'loading', { progress: 'Creating model shot...' });
+
+      const refB64 = lastProductImageB64 || rawB64;
+      const refMime = lastProductImageB64 ? 'image/png' : mime;
+      const isProductRef = !!lastProductImageB64;
+
+      const shoeDesc = isProductRef
+        ? `This product photo shows the EXACT shoe. It already has correct color, material, heel. Do NOT change it — place this exact shoe on the model.`
+        : `Apply: HEEL: ${heelGuide}, COLOR: ${selectedColor.desc}, MATERIAL: ${selectedMaterial.texture}. Keep same silhouette/strap/toe.`;
+
+      const modelParts = [
+        { inlineData: { mimeType: refMime, data: refB64 } },
+        { text: `${shoeDesc}
+
+Create fashion editorial photo of stylish woman wearing this shoe.
+OUTFIT: ${selectedOccasion.outfit}
+SETTING: ${selectedOccasion.scene}
+
+Full-body shot, shoes clearly visible with identifiable details. Professional photography. No text/watermarks.` }
+      ];
+
+      const result = await callGeminiMultiTurn([{ role: 'user', parts: modelParts }]);
+      if (result.image) {
+        setResultState(type, 'image', { image: result.image });
+        showOrderSection();
+      } else {
+        throw new Error('No image generated');
+      }
+    }
+  } catch (err) {
+    document.getElementById('error-box').textContent = err.message;
+    document.getElementById('error-box').style.display = '';
+    setResultState(type, 'empty');
+  } finally {
+    loading[type] = false;
+    updateGenButton();
+  }
+}
+
+function generateAll() {
+  generateOne('product').then(() => generateOne('model'));
+}
+
+function showOrderSection() {
+  const section = document.getElementById('order-section');
+  const summary = document.getElementById('order-summary');
+  const btn = document.getElementById('order-btn');
+  
+  summary.innerHTML = `
+    <strong>${selectedProduct.name}</strong><br>
+    ${selectedHeel.label} heel · ${selectedMaterial.label} · ${selectedColor.label}<br>
+    Perfect for: ${selectedOccasion.label}
+  `;
+  
+  btn.href = selectedProduct.shopify_url;
+  section.classList.add('visible');
+}
+
+// Close modal on escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') hideApiModal();
+});
+</script>
+</body>
+</html>
