@@ -109,11 +109,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .model-card.selected { border-color: var(--gold); background: rgba(201,168,76,.05); }
 .model-img-wrap { 
   width: 100%; 
-  aspect-ratio: 1; 
+  height: 160px;
   background: #f8f8f8; 
   overflow: hidden; 
   padding: 8px;
-  min-height: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -121,6 +120,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .model-img-wrap img { 
   max-width: 100%; 
   max-height: 100%;
+  width: auto;
+  height: auto;
   object-fit: contain;
   display: block;
 }
@@ -859,7 +860,7 @@ function buildHeelOptions() {
   const row = document.getElementById('heel-row');
   row.innerHTML = HEELS.map(h => {
     const enabled = available.includes(h.id);
-    const svgH = { flat:2, low:8, mid:16, high:24, stiletto:33 }[h.id];
+    const svgH = { 'flat':2, '6cm':10, '8cm':16, '9.5cm':24, '11cm':32 }[h.id] || 16;
     return `
       <button class="heel-btn ${enabled ? '' : 'disabled'}" data-id="${h.id}" ${enabled ? `onclick="selectHeel('${h.id}')"` : ''}>
         <svg width="40" height="36" viewBox="0 0 40 36" fill="none">
