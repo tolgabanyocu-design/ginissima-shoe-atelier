@@ -193,6 +193,21 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 }
 .swatch.active { border: 3px solid var(--text); }
 .swatch.disabled { opacity: .25; cursor: not-allowed; }
+.swatch.original-swatch { 
+  background: linear-gradient(135deg, #f5f5f5 25%, #e0e0e0 25%, #e0e0e0 50%, #f5f5f5 50%, #f5f5f5 75%, #e0e0e0 75%);
+  background-size: 8px 8px;
+  color: #666;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #999;
+}
+.swatch.original-swatch.active { 
+  border: 2px solid var(--gold); 
+  background: var(--gold);
+  color: white;
+}
 .color-label { margin-top: 8px; font-size: 12px; color: var(--text3); }
 
 /* Occasion cards */
@@ -976,9 +991,20 @@ async function loadProductImage() {
 function buildHeelOptions() {
   const available = (selectedProduct.heels || '').split(',').map(s => s.trim().toLowerCase());
   const row = document.getElementById('heel-row');
-  // Only show available heels
+  // Add "Original" option first, then available heels
   const availableHeels = HEELS.filter(h => available.includes(h.id));
-  row.innerHTML = availableHeels.map(h => {
+  
+  let html = `
+    <button class="heel-btn" data-id="original" onclick="selectHeel('original')">
+      <svg width="40" height="36" viewBox="0 0 40 36" fill="none">
+        <circle cx="20" cy="18" r="12" fill="#555"/>
+        <text x="20" y="22" text-anchor="middle" fill="white" font-size="10">✓</text>
+      </svg>
+      <span class="label">Original</span>
+      <span class="sub">Fără modificări</span>
+    </button>`;
+  
+  html += availableHeels.map(h => {
     const svgH = { 'flat':2, '6cm':10, '8cm':16, '9.5cm':24, '11cm':32 }[h.id] || 16;
     return `
       <button class="heel-btn" data-id="${h.id}" onclick="selectHeel('${h.id}')">
@@ -990,26 +1016,36 @@ function buildHeelOptions() {
         <span class="sub">${h.height}</span>
       </button>`;
   }).join('');
+  
+  row.innerHTML = html;
 }
 
 function buildMaterialOptions() {
   const available = (selectedProduct.materials || '').split(',').map(s => s.trim().toLowerCase());
   const row = document.getElementById('material-row');
-  // Only show available materials
+  // Add "Original" option first, then available materials
   const availableMaterials = MATERIALS.filter(m => available.includes(m.id));
-  row.innerHTML = availableMaterials.map(m => {
+  
+  let html = `<button class="chip" data-id="original" onclick="selectMaterial('original')">Original</button>`;
+  html += availableMaterials.map(m => {
     return `<button class="chip" data-id="${m.id}" onclick="selectMaterial('${m.id}')">${m.label}</button>`;
   }).join('');
+  
+  row.innerHTML = html;
 }
 
 function buildColorOptions() {
   const available = (selectedProduct.colors || '').split(',').map(s => s.trim().toLowerCase());
   const row = document.getElementById('color-row');
-  // Only show available colors
+  // Add "Original" option first, then available colors
   const availableColors = COLORS.filter(c => available.includes(c.id));
-  row.innerHTML = availableColors.map(c => {
+  
+  let html = `<button class="swatch original-swatch" data-id="original" title="Original - Fără modificări" onclick="selectColor('original')">✓</button>`;
+  html += availableColors.map(c => {
     return `<button class="swatch" data-id="${c.id}" style="background:${c.hex}" title="${c.label}" onclick="selectColor('${c.id}')"></button>`;
   }).join('');
+  
+  row.innerHTML = html;
   document.getElementById('color-label').textContent = '';
 }
 
@@ -1027,28 +1063,44 @@ function buildOccasionOptions() {
 // SELECTION HANDLERS
 // ══════════════════════════════════════════════════════════════
 function selectHeel(id) {
-  selectedHeel = HEELS.find(h => h.id === id);
+  if (id === 'original') {
+    selectedHeel = { id: 'original', label: 'Original', height: 'Fără modificări', desc: 'original heel height' };
+  } else {
+    selectedHeel = HEELS.find(h => h.id === id);
+  }
   document.querySelectorAll('.heel-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.id === id);
-    const paths = b.querySelectorAll('path, rect');
-    paths.forEach(p => p.setAttribute('fill', b.dataset.id === id ? '#f5f0eb' : '#555'));
+    const paths = b.querySelectorAll('path, rect, circle');
+    paths.forEach(p => p.setAttribute('fill', b.dataset.id === id ? '#c9a84c' : '#555'));
   });
   updateGenButton();
 }
 
 function selectMaterial(id) {
-  selectedMaterial = MATERIALS.find(m => m.id === id);
+  if (id === 'original') {
+    selectedMaterial = { id: 'original', label: 'Original', texture: 'original material' };
+  } else {
+    selectedMaterial = MATERIALS.find(m => m.id === id);
+  }
   document.querySelectorAll('.chip').forEach(b => b.classList.toggle('active', b.dataset.id === id));
   updateGenButton();
 }
 
 function selectColor(id) {
-  selectedColor = COLORS.find(c => c.id === id);
+  if (id === 'original') {
+    selectedColor = { id: 'original', label: 'Original', hex: '#888', desc: 'original color' };
+  } else {
+    selectedColor = COLORS.find(c => c.id === id);
+  }
   document.querySelectorAll('.swatch').forEach(b => {
     b.classList.toggle('active', b.dataset.id === id);
-    b.style.boxShadow = b.dataset.id === id ? `0 0 14px ${COLORS.find(c=>c.id===id).hex}66` : 'none';
+    if (id === 'original') {
+      b.style.boxShadow = b.dataset.id === id ? '0 0 14px rgba(201,168,76,0.5)' : 'none';
+    } else {
+      b.style.boxShadow = b.dataset.id === id ? `0 0 14px ${COLORS.find(c=>c.id===id)?.hex || '#888'}66` : 'none';
+    }
   });
-  document.getElementById('color-label').textContent = selectedColor ? `Selected: ${selectedColor.label}` : '';
+  document.getElementById('color-label').textContent = selectedColor ? `Selectat: ${selectedColor.label}` : '';
   updateGenButton();
 }
 
@@ -1188,67 +1240,87 @@ async function generateOne(type) {
   const mime = productImageB64.startsWith('data:image/png') ? 'image/png' : 'image/jpeg';
   const rawB64 = productImageB64.split(',')[1];
 
+  // Check if all selections are "original" (no changes)
+  const isOriginalHeel = selectedHeel.id === 'original';
+  const isOriginalMaterial = selectedMaterial.id === 'original';
+  const isOriginalColor = selectedColor.id === 'original';
+  const allOriginal = isOriginalHeel && isOriginalMaterial && isOriginalColor;
+
   // Heel guidance — only changes height, preserves original heel shape
-  const heelGuide = selectedHeel.id === 'flat'
+  const heelGuide = selectedHeel.id === 'original'
+    ? 'Keep the ORIGINAL heel height exactly as shown.'
+    : selectedHeel.id === 'flat'
     ? 'Remove the heel completely — flat sole with zero elevation.'
-    : selectedHeel.id === 'low'
-    ? 'Adjust heel height to 2–4 cm, keeping the SAME heel shape as original.'
-    : selectedHeel.id === 'mid'
-    ? 'Adjust heel height to 5–7 cm, keeping the SAME heel shape as original.'
-    : selectedHeel.id === 'high'
-    ? 'Adjust heel height to 8–10 cm, keeping the SAME heel shape as original.'
-    : 'Adjust to 11+ cm needle-thin stiletto.';
+    : selectedHeel.id === '6cm'
+    ? 'Adjust heel height to 6 cm, keeping the SAME heel shape as original.'
+    : selectedHeel.id === '8cm'
+    ? 'Adjust heel height to 8 cm, keeping the SAME heel shape as original.'
+    : selectedHeel.id === '9.5cm'
+    ? 'Adjust heel height to 9.5 cm, keeping the SAME heel shape as original.'
+    : 'Adjust to 11 cm needle-thin stiletto.';
 
   try {
     if (type === 'product') {
-      setResultState(type, 'loading', { progress: 'Analyzing shoe...' });
+      // If all original, just show the original product image
+      if (allOriginal) {
+        setResultState(type, 'loading', { progress: 'Se încarcă imaginea originală...' });
+        await new Promise(r => setTimeout(r, 500)); // Brief delay for UX
+        lastProductImageB64 = rawB64;
+        setResultState(type, 'image', { image: rawB64 });
+      } else {
+        // Generate modified product
+        setResultState(type, 'loading', { progress: 'Analizăm pantoful...' });
 
-      const turn1Messages = [{
-        role: 'user',
-        parts: [
-          { inlineData: { mimeType: mime, data: rawB64 } },
-          { text: `Study this shoe. Describe its structural details: silhouette, back/strap construction (slingback? pump?), toe shape, cutline of upper, d'Orsay opening if any, buckle/hardware, heel shape/form (block? tapered?), sole profile. Under 100 words. Do NOT describe color or material.` }
-        ]
-      }];
-
-      const turn1Result = await callGeminiMultiTurn(turn1Messages);
-      const shoeAnalysis = turn1Result.text || 'shoe structure analyzed';
-
-      setResultState(type, 'loading', { progress: 'Generating product shot...' });
-
-      const turn2Messages = [
-        turn1Messages[0],
-        { role: 'model', parts: [{ text: shoeAnalysis }] },
-        {
+        const turn1Messages = [{
           role: 'user',
           parts: [
             { inlineData: { mimeType: mime, data: rawB64 } },
-            { text: `Your analysis above is a BINDING CONTRACT. DO NOT CHANGE:
+            { text: `Study this shoe. Describe its structural details: silhouette, back/strap construction (slingback? pump?), toe shape, cutline of upper, d'Orsay opening if any, buckle/hardware, heel shape/form (block? tapered?), sole profile. Under 100 words. Do NOT describe color or material.` }
+          ]
+        }];
+
+        const turn1Result = await callGeminiMultiTurn(turn1Messages);
+        const shoeAnalysis = turn1Result.text || 'shoe structure analyzed';
+
+        setResultState(type, 'loading', { progress: 'Generăm produsul...' });
+
+        // Build change instructions only for non-original selections
+        let changeInstructions = 'CHANGES TO APPLY:\n';
+        changeInstructions += `1. HEEL HEIGHT: ${heelGuide}\n`;
+        changeInstructions += isOriginalColor ? '2. COLOR: Keep the ORIGINAL color exactly.\n' : `2. COLOR: ${selectedColor.desc}\n`;
+        changeInstructions += isOriginalMaterial ? '3. MATERIAL: Keep the ORIGINAL material exactly.\n' : `3. MATERIAL: ${selectedMaterial.texture}\n`;
+
+        const turn2Messages = [
+          turn1Messages[0],
+          { role: 'model', parts: [{ text: shoeAnalysis }] },
+          {
+            role: 'user',
+            parts: [
+              { inlineData: { mimeType: mime, data: rawB64 } },
+              { text: `Your analysis above is a BINDING CONTRACT. DO NOT CHANGE:
 • BACK: If slingback, output MUST be slingback. Do NOT make it a pump.
 • HEEL SHAPE: Keep same form (block stays block, etc). Only height changes.
 • TOE/CUTLINE/HARDWARE: Preserve exactly.
 
-CHANGES TO APPLY:
-1. HEEL HEIGHT: ${heelGuide}
-2. COLOR: ${selectedColor.desc}
-3. MATERIAL: ${selectedMaterial.texture}
+${changeInstructions}
 
 Output: Professional e-commerce photo, same angle as reference, off-white background, sharp focus. No text/watermarks.` }
-          ]
-        }
-      ];
+            ]
+          }
+        ];
 
-      const result = await callGeminiMultiTurn(turn2Messages);
-      if (result.image) {
-        lastProductImageB64 = result.image;
-        setResultState(type, 'image', { image: result.image });
-      } else {
-        throw new Error('No image generated');
+        const result = await callGeminiMultiTurn(turn2Messages);
+        if (result.image) {
+          lastProductImageB64 = result.image;
+          setResultState(type, 'image', { image: result.image });
+        } else {
+          throw new Error('No image generated');
+        }
       }
 
     } else {
-      // Model shot
-      setResultState(type, 'loading', { progress: 'Creating model shot...' });
+      // Model shot - always generate, using either original or modified product
+      setResultState(type, 'loading', { progress: 'Creăm imaginea pe model...' });
 
       const refB64 = lastProductImageB64 || rawB64;
       const refMime = lastProductImageB64 ? 'image/png' : mime;
