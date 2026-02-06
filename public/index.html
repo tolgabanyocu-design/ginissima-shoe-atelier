@@ -655,12 +655,14 @@ let productImageB64 = null; // Loaded from selected product
 // INIT
 // ══════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
+  // Try to load API key from server (Railway environment variable)
+  await loadApiKeyFromServer();
   updateApiStatus();
   await loadProducts();
   updateCategoryCounts();
   initSearch();
   
-  // File input for API key
+  // File input for API key (fallback)
   document.getElementById('key-file').addEventListener('change', (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -669,6 +671,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 });
+
+async function loadApiKeyFromServer() {
+  try {
+    const resp = await fetch('/api/key');
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data.key) {
+        apiKey = data.key;
+        apiKeySource = 'server';
+        console.log('API key loaded from server');
+      }
+    }
+  } catch (err) {
+    console.log('No server API key, user will need to provide one');
+  }
+}
 
 async function loadProducts() {
   // Use embedded data (Google Sheets disabled due to CORS/redirect issues)

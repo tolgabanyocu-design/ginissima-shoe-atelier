@@ -4,6 +4,16 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// API endpoint to get the Gemini API key (stored in Railway environment variable)
+app.get('/api/key', (req, res) => {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (apiKey) {
+    res.json({ key: apiKey });
+  } else {
+    res.status(404).json({ error: 'API key not configured' });
+  }
+});
+
 // Serve static files from public folder
 app.use(express.static('public'));
 
