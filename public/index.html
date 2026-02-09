@@ -759,7 +759,7 @@ const MATERIALS = [
 const COLORS = [
   { id:'negru', label:'Negru', hex:'#1a1a1a', desc:'jet black' },
   { id:'alb', label:'Alb', hex:'#f5f0eb', desc:'pristine white' },
-  { id:'rosu', label:'Roșu', hex:'#c41e3a', desc:'bold crimson red' },
+  { id:'rosu', label:'Roșu', hex:'#E63939', desc:'bright cherry red like Ferrari red - vibrant, high saturation, slightly orange undertone. NOT burgundy, NOT wine, NOT crimson, NOT dark red, NOT maroon, NOT brick red' },
   { id:'roz', label:'Roz', hex:'#de9b9b', desc:'soft blush pink' },
   { id:'lila', label:'Lila', hex:'#9b7bb8', desc:'elegant lilac purple' },
   { id:'nude', label:'Nude', hex:'#d4a984', desc:'warm nude beige' },
@@ -1329,7 +1329,14 @@ async function generateOne(type) {
         // Build change instructions only for non-original selections
         let changeInstructions = 'CHANGES TO APPLY:\n';
         changeInstructions += `1. HEEL HEIGHT: ${heelGuide}\n`;
-        changeInstructions += isOriginalColor ? '2. COLOR: Keep the ORIGINAL color exactly.\n' : `2. COLOR: ${selectedColor.desc}\n`;
+        
+        // Color instruction with hex code for precision
+        if (isOriginalColor) {
+          changeInstructions += '2. COLOR: Keep the ORIGINAL color exactly.\n';
+        } else {
+          changeInstructions += `2. COLOR: ${selectedColor.desc} (hex reference: ${selectedColor.hex}). Match this EXACT tone - do NOT substitute similar colors.\n`;
+        }
+        
         changeInstructions += isOriginalMaterial ? '3. MATERIAL: Keep the ORIGINAL material exactly.\n' : `3. MATERIAL: ${selectedMaterial.texture}\n`;
 
         const turn2Messages = [
@@ -1368,9 +1375,17 @@ Output: Professional e-commerce photo, same angle as reference, off-white backgr
       const refMime = lastProductImageB64 ? 'image/png' : mime;
       const isProductRef = !!lastProductImageB64;
 
+      // Build color description with hex for non-preview mode
+      const colorDesc = (currentMode === 'preview' || !selectedColor) 
+        ? 'original color' 
+        : `${selectedColor.desc} (hex: ${selectedColor.hex})`;
+      const materialDesc = (currentMode === 'preview' || !selectedMaterial) 
+        ? 'original material' 
+        : selectedMaterial.texture;
+
       const shoeDesc = isProductRef
         ? `This product photo shows the EXACT shoe. It already has correct color, material, heel. Do NOT change it — place this exact shoe on the model.`
-        : `Apply: HEEL: ${heelGuide}, COLOR: ${selectedColor.desc}, MATERIAL: ${selectedMaterial.texture}. Keep same silhouette/strap/toe.`;
+        : `Apply: HEEL: ${heelGuide}, COLOR: ${colorDesc} - match EXACTLY, MATERIAL: ${materialDesc}. Keep same silhouette/strap/toe.`;
 
       const modelParts = [
         { inlineData: { mimeType: refMime, data: refB64 } },
