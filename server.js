@@ -14,6 +14,31 @@ app.get('/api/key', (req, res) => {
   }
 });
 
+// API endpoint to validate if a Shopify URL exists
+app.get('/api/validate-url', async (req, res) => {
+  const { url } = req.query;
+  
+  if (!url) {
+    return res.json({ valid: false, error: 'No URL provided' });
+  }
+  
+  // Only allow ginissima.ro URLs for security
+  if (!url.includes('ginissima.ro')) {
+    return res.json({ valid: false, error: 'Invalid domain' });
+  }
+  
+  try {
+    const response = await fetch(url, { method: 'HEAD' });
+    res.json({ 
+      valid: response.ok,
+      status: response.status,
+      url: url
+    });
+  } catch (error) {
+    res.json({ valid: false, error: error.message });
+  }
+});
+
 // Serve static files from public folder
 app.use(express.static('public'));
 

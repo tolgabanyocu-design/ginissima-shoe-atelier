@@ -1429,10 +1429,175 @@ function generateAll() {
   }
 }
 
-function showOrderSection() {
+// Color to URL suffix mapping (Romanian color names in URLs)
+const COLOR_URL_SUFFIXES = {
+  'negru': ['negri', 'negre', 'negru', 'black'],
+  'alb': ['albi', 'albe', 'alb', 'white'],
+  'rosu': ['rosii', 'rosie', 'rosu', 'red'],
+  'roz': ['roz', 'pink'],
+  'nude': ['nude', 'bej'],
+  'burgundy': ['burgundy', 'visiniu'],
+  'auriu': ['aurii', 'auriu', 'gold'],
+  'argintiu': ['argintii', 'argintiu', 'silver'],
+  'maro': ['maro', 'maron', 'brown'],
+  'camel': ['camel'],
+  'caramel': ['caramel'],
+  'gri': ['gri', 'grey', 'gray'],
+  'fucsia': ['fucsia', 'fuchsia'],
+  'aqua': ['aqua'],
+  'lila': ['lila', 'liliac'],
+  'mov': ['mov', 'purple'],
+  'verde': ['verde', 'verzi', 'green'],
+  'alb-murdar': ['alb-murdar', 'alb-unt', 'off-white'],
+  'gri-argintiu': ['gri-argintiu'],
+  'nude-auriu': ['nude-auriu'],
+  'transparent': ['silicon', 'transparent']
+};
+
+// Try to build color-specific URL
+function buildColorSpecificUrl(baseUrl, colorId) {
+  if (!baseUrl || !colorId) return baseUrl;
+  
+  // Get possible suffixes for this color
+  const suffixes = COLOR_URL_SUFFIXES[colorId];
+  if (!suffixes || suffixes.length === 0) return baseUrl;
+  
+  // Parse the base URL to extract the product slug
+  const urlParts = baseUrl.split('/');
+  const productSlug = urlParts[urlParts.length - 1];
+  
+  // Try each suffix - the first one is most common
+  const primarySuffix = suffixes[0];
+  
+  // Check if URL already ends with a color suffix
+  const hasColorSuffix = Object.values(COLOR_URL_SUFFIXES).flat().some(suffix => 
+    productSlug.endsWith('-' + suffix)
+  );
+  
+  if (hasColorSuffix) {
+    // Replace existing color suffix with new one
+    let newSlug = productSlug;
+    for (const suffixList of Object.values(COLOR_URL_SUFFIXES)) {
+      for (const suffix of suffixList) {
+        if (productSlug.endsWith('-' + suffix)) {
+          newSlug = productSlug.replace(new RegExp('-' + suffix + '$'), '-' + primarySuffix);
+          break;
+        }
+      }
+    }
+    urlParts[urlParts.length - 1] = newSlug;
+  } else {
+    // Append color suffix to the slug
+    urlParts[urlParts.length - 1] = productSlug + '-' + primarySuffix;
+  }
+  
+  return urlParts.join('/');
+}
+
+// Check if a URL exists (returns true if accessible)
+async function urlExists(url) {
+  try {
+    const response = await fetch(url, { method: 'HEAD', mode: 'no-cors' });
+    // With no-cors, we can't read the status, but if it doesn't throw, the URL is likely valid
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+// Alternative: Try to validate via Shopify's pattern (checking if page loads)
+async function validateShopifyUrl(url) {
+  try {
+    // Use a simple fetch to check - Shopify returns 200 for valid products
+    // We'll use an img trick to avoid CORS issues
+    return new Promise((resolve) => {
+      const img = new Image();
+      const timeout = setTimeout(() => {
+        resolve(false);
+      }, 3000);
+      
+      // Try to load the OpenGraph image which exists for valid products
+      img.onload = () => {
+        clearTimeout(timeout);
+        resolve(true);
+      };
+      img.onerror = () => {
+        clearTimeout(timeout);
+        resolve(false);
+      };
+      
+      // Shopify products have predictable OG image URLs
+      // But this isn't reliable, so let's just try the URL directly
+      // For now, we'll use a simpler approach
+      resolve(true); // Assume valid, Shopify will handle 404 gracefully
+    });
+  } catch {
+    return false;
+  }
+}
+
+// Build list of possible URLs for a color (tries multiple suffixes)
+function buildPossibleColorUrls(baseUrl, colorId) {
+  if (!baseUrl || !colorId) return [baseUrl];
+  
+  const suffixes = COLOR_URL_SUFFIXES[colorId];
+  if (!suffixes || suffixes.length === 0) return [baseUrl];
+  
+  const urls = [];
+  const urlParts = baseUrl.split('/');
+  const productSlug = urlParts[urlParts.length - 1];
+  
+  // Check if URL already ends with a color suffix
+  const currentSuffix = Object.values(COLOR_URL_SUFFIXES).flat().find(suffix => 
+    productSlug.endsWith('-' + suffix)
+  );
+  
+  for (const suffix of suffixes) {
+    const newUrlParts = [...urlParts];
+    if (currentSuffix) {
+      // Replace existing suffix
+      newUrlParts[newUrlParts.length - 1] = productSlug.replace(new RegExp('-' + currentSuffix + '$'), '-' + suffix);
+    } else {
+      // Append suffix
+      newUrlParts[newUrlParts.length - 1] = productSlug + '-' + suffix;
+    }
+    urls.push(newUrlParts.join('/'));
+  }
+  
+  return urls;
+}
+
+// Find the best URL - validates via server to avoid CORS issues
+async function findValidUrl(candidateUrls, fallbackUrl) {
+  for (const url of candidateUrls) {
+    try {
+      const response = await fetch(`/api/validate-url?url=${encodeURIComponent(url)}`);
+      const data = await response.json();
+      
+      if (data.valid) {
+        console.log('Valid URL found:', url);
+        return url;
+      } else {
+        console.log('URL not valid:', url, data.status || data.error);
+      }
+    } catch (error) {
+      console.log('Validation error for URL:', url, error);
+    }
+  }
+  
+  // No valid color-specific URL found, use fallback
+  console.log('No valid color URL found, using base:', fallbackUrl);
+  return fallbackUrl;
+}
+
+async function showOrderSection() {
   const section = document.getElementById('order-section');
   const summary = document.getElementById('order-summary');
   const btn = document.getElementById('order-btn');
+  
+  // Base URL as fallback
+  const baseUrl = selectedProduct.shopify_url;
+  let orderUrl = baseUrl;
   
   if (currentMode === 'preview') {
     summary.innerHTML = `
@@ -1440,15 +1605,37 @@ function showOrderSection() {
       Design original<br>
       Perfect pentru: ${selectedOccasion.label}
     `;
+    // Use base product URL for preview mode
   } else {
     summary.innerHTML = `
       <strong>${selectedProduct.name}</strong><br>
       ${selectedHeel?.label || 'Original'} · ${selectedMaterial?.label || 'Original'} · ${selectedColor?.label || 'Original'}<br>
       Perfect pentru: ${selectedOccasion.label}
     `;
+    
+    // Try to build and validate color-specific URL if color was changed
+    if (selectedColor && selectedColor.id !== 'original') {
+      // Show loading state on button while checking URL
+      btn.textContent = 'Se verifică linkul...';
+      btn.href = '#';
+      
+      // Get all possible URLs for this color
+      const candidateUrls = buildPossibleColorUrls(baseUrl, selectedColor.id);
+      
+      // Try to find a valid URL, fall back to base if none work
+      try {
+        orderUrl = await findValidUrl(candidateUrls, baseUrl);
+      } catch (error) {
+        console.log('URL validation failed, using base URL:', error);
+        orderUrl = baseUrl;
+      }
+      
+      // Restore button text
+      btn.innerHTML = '🛒&nbsp;&nbsp;Comandă Acest Design';
+    }
   }
   
-  btn.href = selectedProduct.shopify_url;
+  btn.href = orderUrl;
   section.classList.add('visible');
 }
 
