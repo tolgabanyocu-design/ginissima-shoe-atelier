@@ -741,9 +741,12 @@ const SAMPLE_PRODUCTS = [
 const HEELS = [
   { id:'flat', label:'Plat', height:'0–2 cm', visual:'completely flat sole with no heel piece at all' },
   { id:'6cm', label:'6 cm', height:'6 cm', visual:'a low-mid heel approximately 6 cm tall, keeping the same heel shape/style as the original' },
+  { id:'6.5cm', label:'6.5 cm', height:'6.5 cm', visual:'a low-mid heel approximately 6.5 cm tall, keeping the same heel shape/style as the original' },
   { id:'8cm', label:'8 cm', height:'8 cm', visual:'a medium heel approximately 8 cm tall, keeping the same heel shape/style as the original' },
   { id:'9.5cm', label:'9.5 cm', height:'9.5 cm', visual:'a high heel approximately 9.5 cm tall, keeping the same heel shape/style as the original' },
+  { id:'10cm', label:'10 cm', height:'10 cm', visual:'a high stiletto heel approximately 10 cm tall' },
   { id:'11cm', label:'11 cm', height:'11 cm', visual:'a very high stiletto heel approximately 11 cm tall' },
+  { id:'14cm', label:'14 cm', height:'14 cm', visual:'an extreme high stiletto heel approximately 14 cm tall' },
 ];
 const MATERIALS = [
   { id:'piele naturala', label:'Piele Naturală', texture:'smooth polished natural leather with subtle grain' },
@@ -754,34 +757,120 @@ const MATERIALS = [
   { id:'plasa', label:'Plasă', texture:'delicate mesh fabric with subtle transparency' },
   { id:'piele embosata', label:'Piele Embosată', texture:'embossed leather with textured pattern' },
   { id:'piele sidefata', label:'Piele Sidefată', texture:'pearlescent iridescent leather with subtle shimmer' },
+  { id:'piele elastica', label:'Piele Elastică', texture:'stretchy elastic leather that hugs the foot snugly' },
   { id:'silicon', label:'Silicon', texture:'transparent flexible silicon material' },
 ];
 const COLORS = [
+  // === NEUTRALS ===
   { id:'negru', label:'Negru', hex:'#1a1a1a', desc:'jet black' },
   { id:'alb', label:'Alb', hex:'#f5f0eb', desc:'pristine white' },
-  { id:'rosu', label:'Roșu', hex:'#E63939', desc:'bright cherry red like Ferrari red - vibrant, high saturation, slightly orange undertone. NOT burgundy, NOT wine, NOT crimson, NOT dark red, NOT maroon, NOT brick red' },
-  { id:'roz', label:'Roz', hex:'#de9b9b', desc:'soft blush pink' },
-  { id:'lila', label:'Lila', hex:'#9b7bb8', desc:'elegant lilac purple' },
-  { id:'nude', label:'Nude', hex:'#d4a984', desc:'warm nude beige' },
-  { id:'burgundy', label:'Burgundy', hex:'#6b1c2a', desc:'rich burgundy wine' },
-  { id:'emerald', label:'Verde Smarald', hex:'#1a6b4a', desc:'vivid emerald green' },
-  { id:'aqua', label:'Aqua', hex:'#5f9ea0', desc:'fresh aqua blue-green' },
-  { id:'auriu', label:'Auriu', hex:'#c9a84c', desc:'metallic gold' },
-  { id:'argintiu', label:'Argintiu', hex:'#a8a9ad', desc:'brushed silver metallic' },
-  { id:'vanilla', label:'Vanilla', hex:'#f3e5ab', desc:'soft vanilla cream' },
-  { id:'fucsia', label:'Fucsia', hex:'#ff1493', desc:'vibrant fuchsia pink' },
-  { id:'nude-auriu', label:'Nude-Auriu', hex:'#d4b896', desc:'warm nude with golden shimmer' },
-  { id:'gri-argintiu', label:'Gri-Argintiu', hex:'#9ca3af', desc:'silver-grey metallic' },
+  { id:'alb-murdar', label:'Alb-Murdar', hex:'#f5f5dc', desc:'off-white cream' },
+  { id:'off-white', label:'Off-White', hex:'#faf0e6', desc:'soft off-white cream' },
+  { id:'alb-unt', label:'Alb-Unt', hex:'#fffdd0', desc:'butter white cream' },
   { id:'gri', label:'Gri', hex:'#6b7280', desc:'sophisticated grey' },
+  { id:'gri deschis', label:'Gri Deschis', hex:'#9ca3af', desc:'light grey' },
+  { id:'gri inchis', label:'Gri Închis', hex:'#4b5563', desc:'dark charcoal grey' },
+  { id:'gri-argintiu', label:'Gri-Argintiu', hex:'#9ca3af', desc:'silver-grey metallic' },
+  { id:'gri-liliac', label:'Gri-Liliac', hex:'#b8a9c9', desc:'grey with lilac undertone' },
+  { id:'gri-olive', label:'Gri-Olive', hex:'#808069', desc:'grey with olive undertone' },
+  
+  // === NUDES & BEIGES ===
+  { id:'nude', label:'Nude', hex:'#d4a984', desc:'warm nude beige' },
+  { id:'nude-auriu', label:'Nude-Auriu', hex:'#d4b896', desc:'warm nude with golden shimmer' },
+  { id:'nude-negru', label:'Nude-Negru', hex:'#8b7355', desc:'dark nude with black undertone' },
+  { id:'bej', label:'Bej', hex:'#d2b48c', desc:'classic beige' },
+  { id:'grej', label:'Grej', hex:'#b8a590', desc:'grey-beige taupe' },
+  { id:'vanilla', label:'Vanilla', hex:'#f3e5ab', desc:'soft vanilla cream' },
+  { id:'vanilla haze', label:'Vanilla Haze', hex:'#f5e6c8', desc:'soft vanilla haze cream' },
+  
+  // === BROWNS ===
   { id:'maro', label:'Maro', hex:'#8b4513', desc:'rich brown' },
+  { id:'maron', label:'Maron', hex:'#5d4037', desc:'dark brown' },
+  { id:'maro inchis', label:'Maro Închis', hex:'#3e2723', desc:'very dark brown' },
+  { id:'maro-caramel', label:'Maro-Caramel', hex:'#a67b5b', desc:'brown with caramel warmth' },
+  { id:'maron-caramel', label:'Maron-Caramel', hex:'#8b6914', desc:'dark brown caramel' },
+  { id:'maro-ciocolatiu', label:'Maro-Ciocolatiu', hex:'#7b3f00', desc:'rich chocolate brown' },
   { id:'camel', label:'Camel', hex:'#c19a6b', desc:'warm camel tan' },
   { id:'caramel', label:'Caramel', hex:'#a67b5b', desc:'warm caramel brown' },
-  { id:'kaki', label:'Kaki', hex:'#6b8e23', desc:'olive khaki green' },
-  { id:'mov', label:'Mov', hex:'#7b68ee', desc:'elegant purple' },
+  { id:'caramiziu', label:'Cărămiziu', hex:'#b7410e', desc:'brick terracotta' },
+  { id:'mocha mousse', label:'Mocha Mousse', hex:'#967259', desc:'soft mocha brown' },
+  
+  // === REDS ===
+  { id:'rosu', label:'Roșu', hex:'#E63939', desc:'bright cherry red like Ferrari red - vibrant, high saturation, slightly orange undertone. NOT burgundy, NOT wine, NOT crimson, NOT dark red, NOT maroon, NOT brick red' },
+  { id:'rosu-intens', label:'Roșu Intens', hex:'#cc0000', desc:'intense deep red' },
+  { id:'burgundy', label:'Burgundy', hex:'#6b1c2a', desc:'rich burgundy wine' },
+  { id:'bordeaux', label:'Bordeaux', hex:'#7b1e3b', desc:'deep bordeaux wine red' },
+  { id:'plum', label:'Plum', hex:'#8e4585', desc:'rich plum purple-red' },
+  
+  // === PINKS ===
+  { id:'roz', label:'Roz', hex:'#de9b9b', desc:'soft blush pink' },
+  { id:'roz-nude', label:'Roz-Nude', hex:'#dcb8a4', desc:'nude pink blush' },
+  { id:'roz-piersica', label:'Roz-Piersică', hex:'#ffdab9', desc:'peachy pink' },
+  { id:'roz-negru', label:'Roz-Negru', hex:'#8b4557', desc:'dusty rose with dark undertone' },
+  { id:'rose', label:'Rose', hex:'#e8a0a0', desc:'soft rose pink' },
+  { id:'fucsia', label:'Fucsia', hex:'#ff1493', desc:'vibrant fuchsia pink' },
+  
+  // === ORANGES & YELLOWS ===
   { id:'portocaliu', label:'Portocaliu', hex:'#ff7f50', desc:'vibrant orange' },
+  { id:'galben-lime', label:'Galben-Lime', hex:'#bfff00', desc:'bright lime yellow-green' },
+  { id:'galben-mustar', label:'Galben-Muștar', hex:'#ffdb58', desc:'mustard yellow' },
+  { id:'galben-pai', label:'Galben-Pai', hex:'#f5deb3', desc:'straw pale yellow' },
+  { id:'galben pal', label:'Galben Pal', hex:'#fffacd', desc:'pale light yellow' },
+  { id:'neon', label:'Neon', hex:'#ccff00', desc:'bright neon yellow-green' },
+  
+  // === GREENS ===
+  { id:'verde', label:'Verde', hex:'#228b22', desc:'forest green' },
+  { id:'verde smarald', label:'Verde Smarald', hex:'#1a6b4a', desc:'vivid emerald green' },
+  { id:'verde forest', label:'Verde Forest', hex:'#228b22', desc:'deep forest green' },
+  { id:'verde inchis', label:'Verde Închis', hex:'#006400', desc:'dark green' },
+  { id:'verde-menta', label:'Verde-Mentă', hex:'#98ff98', desc:'fresh mint green' },
+  { id:'verde-mint', label:'Verde-Mint', hex:'#98ff98', desc:'fresh mint green' },
+  { id:'verde-salvie', label:'Verde-Salvie', hex:'#9dc183', desc:'sage green' },
+  { id:'kaki', label:'Kaki', hex:'#6b8e23', desc:'olive khaki green' },
+  
+  // === BLUES ===
+  { id:'albastru', label:'Albastru', hex:'#0066cc', desc:'classic blue' },
+  { id:'blue', label:'Blue', hex:'#4169e1', desc:'royal blue' },
+  { id:'albastru electric', label:'Albastru Electric', hex:'#007fff', desc:'electric bright blue' },
+  { id:'albastru-celest', label:'Albastru-Celest', hex:'#87ceeb', desc:'sky blue celestial' },
+  { id:'albastru-petrol', label:'Albastru-Petrol', hex:'#004953', desc:'dark petrol teal blue' },
+  { id:'albastru-royal', label:'Albastru-Royal', hex:'#4169e1', desc:'royal blue' },
+  { id:'bleumarin', label:'Bleumarin', hex:'#000080', desc:'navy blue' },
+  { id:'indigo', label:'Indigo', hex:'#4b0082', desc:'deep indigo blue-purple' },
+  { id:'turcoaz', label:'Turcoaz', hex:'#40e0d0', desc:'bright turquoise' },
+  { id:'aqua', label:'Aqua', hex:'#5f9ea0', desc:'fresh aqua blue-green' },
+  
+  // === PURPLES ===
+  { id:'lila', label:'Lila', hex:'#9b7bb8', desc:'elegant lilac purple' },
+  { id:'mov', label:'Mov', hex:'#7b68ee', desc:'elegant purple' },
+  { id:'mov-lavanda', label:'Mov-Lavandă', hex:'#e6e6fa', desc:'soft lavender purple' },
+  { id:'mov metalizat', label:'Mov Metalizat', hex:'#9370db', desc:'metallic purple sheen' },
+  
+  // === METALLICS ===
+  { id:'auriu', label:'Auriu', hex:'#c9a84c', desc:'metallic gold' },
+  { id:'auriu-rose', label:'Auriu-Rose', hex:'#b76e79', desc:'rose gold metallic' },
+  { id:'auriu-negru', label:'Auriu-Negru', hex:'#8b7500', desc:'dark antique gold' },
+  { id:'argintiu', label:'Argintiu', hex:'#a8a9ad', desc:'brushed silver metallic' },
+  { id:'argintiu-negru', label:'Argintiu-Negru', hex:'#71797e', desc:'gunmetal dark silver' },
+  { id:'argintiu-oglinda', label:'Argintiu-Oglindă', hex:'#c0c0c0', desc:'mirror silver reflective' },
+  { id:'aurii cu reflexii colorate', label:'Auriu Reflexii', hex:'#daa520', desc:'gold with iridescent colored reflections' },
+  
+  // === SPECIAL ===
   { id:'transparent', label:'Transparent', hex:'rgba(200,200,200,0.3)', desc:'clear transparent' },
-  { id:'alb-murdar', label:'Alb-Murdar', hex:'#f5f5dc', desc:'off-white cream' },
-  { id:'maron', label:'Maron', hex:'#5d4037', desc:'dark brown' },
+  { id:'animal print', label:'Animal Print', hex:'#d2a679', desc:'leopard or animal pattern print' },
+  
+  // === COMBOS (for display, AI will interpret) ===
+  { id:'alb-negru', label:'Alb/Negru', hex:'#808080', desc:'black and white combination' },
+  { id:'alb/auriu', label:'Alb/Auriu', hex:'#f5e6c8', desc:'white with gold accents' },
+  { id:'alb/negru', label:'Alb/Negru', hex:'#808080', desc:'white and black combination' },
+  { id:'blue-verde', label:'Blue-Verde', hex:'#008b8b', desc:'teal blue-green' },
+  { id:'blue/alb', label:'Blue/Alb', hex:'#87ceeb', desc:'blue with white accents' },
+  { id:'kaki/auriu', label:'Kaki/Auriu', hex:'#8b8b00', desc:'khaki with gold accents' },
+  { id:'kaki/roz', label:'Kaki/Roz', hex:'#9b8b7a', desc:'khaki with pink accents' },
+  { id:'lila/alb', label:'Lila/Alb', hex:'#c8a2c8', desc:'lilac with white accents' },
+  { id:'mint/blue', label:'Mint/Blue', hex:'#7fffd4', desc:'mint with blue accents' },
+  { id:'mint/roz', label:'Mint/Roz', hex:'#98fb98', desc:'mint with pink accents' },
+  { id:'roz/blue', label:'Roz/Blue', hex:'#dda0dd', desc:'pink with blue accents' },
 ];
 const OCCASIONS = [
   { id:'nunta', label:'Nuntă', icon:'💒', scene:'an elegant luxury wedding venue with floral arrangements and romantic lighting', outfit:'an elegant floor-length bridal or formal gown' },
@@ -1431,27 +1520,107 @@ function generateAll() {
 
 // Color to URL suffix mapping (Romanian color names in URLs)
 const COLOR_URL_SUFFIXES = {
+  // Neutrals
   'negru': ['negri', 'negre', 'negru', 'black'],
   'alb': ['albi', 'albe', 'alb', 'white'],
-  'rosu': ['rosii', 'rosie', 'rosu', 'red'],
-  'roz': ['roz', 'pink'],
+  'alb-murdar': ['alb-murdar', 'alb-unt', 'off-white'],
+  'off-white': ['off-white', 'alb-murdar'],
+  'alb-unt': ['alb-unt', 'alb-murdar'],
+  'gri': ['gri', 'grey', 'gray'],
+  'gri deschis': ['gri-deschis', 'gri'],
+  'gri inchis': ['gri-inchis', 'gri'],
+  'gri-argintiu': ['gri-argintiu'],
+  'gri-liliac': ['gri-liliac'],
+  'gri-olive': ['gri-olive'],
+  
+  // Nudes & Beiges
   'nude': ['nude', 'bej'],
-  'burgundy': ['burgundy', 'visiniu'],
-  'auriu': ['aurii', 'auriu', 'gold'],
-  'argintiu': ['argintii', 'argintiu', 'silver'],
+  'nude-auriu': ['nude-auriu'],
+  'nude-negru': ['nude-negru'],
+  'bej': ['bej', 'nude'],
+  'grej': ['grej'],
+  'vanilla': ['vanilla', 'vanilla-haze'],
+  'vanilla haze': ['vanilla-haze', 'vanilla'],
+  
+  // Browns
   'maro': ['maro', 'maron', 'brown'],
+  'maron': ['maron', 'maro'],
+  'maro inchis': ['maro-inchis', 'maron'],
+  'maro-caramel': ['maro-caramel', 'caramel'],
+  'maron-caramel': ['maron-caramel', 'caramel'],
+  'maro-ciocolatiu': ['maro-ciocolatiu', 'ciocolatiu'],
   'camel': ['camel'],
   'caramel': ['caramel'],
-  'gri': ['gri', 'grey', 'gray'],
+  'caramiziu': ['caramiziu'],
+  'mocha mousse': ['mocha-mousse', 'mocha'],
+  
+  // Reds
+  'rosu': ['rosii', 'rosie', 'rosu', 'red'],
+  'rosu-intens': ['rosu-intens', 'rosii'],
+  'burgundy': ['burgundy', 'visiniu'],
+  'bordeaux': ['bordeaux', 'burgundy'],
+  'plum': ['plum'],
+  
+  // Pinks
+  'roz': ['roz', 'pink'],
+  'roz-nude': ['roz-nude', 'roz'],
+  'roz-piersica': ['roz-piersica', 'piersica'],
+  'roz-negru': ['roz-negru'],
+  'rose': ['rose', 'roz'],
   'fucsia': ['fucsia', 'fuchsia'],
+  
+  // Oranges & Yellows
+  'portocaliu': ['portocalii', 'portocaliu', 'orange'],
+  'galben-lime': ['galben-lime', 'lime'],
+  'galben-mustar': ['galben-mustar', 'mustar'],
+  'galben-pai': ['galben-pai', 'pai'],
+  'galben pal': ['galben-pal'],
+  'neon': ['neon'],
+  
+  // Greens
+  'verde': ['verde', 'verzi', 'green'],
+  'verde smarald': ['verde-smarald', 'smarald'],
+  'verde forest': ['verde-forest'],
+  'verde inchis': ['verde-inchis'],
+  'verde-menta': ['verde-menta', 'menta', 'mint'],
+  'verde-mint': ['verde-mint', 'mint'],
+  'verde-salvie': ['verde-salvie', 'salvie'],
+  'kaki': ['kaki', 'khaki'],
+  
+  // Blues
+  'albastru': ['albastru', 'albastre', 'blue'],
+  'blue': ['blue', 'albastru'],
+  'albastru electric': ['albastru-electric'],
+  'albastru-celest': ['albastru-celest', 'celest'],
+  'albastru-petrol': ['albastru-petrol', 'petrol'],
+  'albastru-royal': ['albastru-royal', 'royal'],
+  'bleumarin': ['bleumarin', 'navy'],
+  'indigo': ['indigo'],
+  'turcoaz': ['turcoaz', 'turquoise'],
   'aqua': ['aqua'],
+  
+  // Purples
   'lila': ['lila', 'liliac'],
   'mov': ['mov', 'purple'],
-  'verde': ['verde', 'verzi', 'green'],
-  'alb-murdar': ['alb-murdar', 'alb-unt', 'off-white'],
-  'gri-argintiu': ['gri-argintiu'],
-  'nude-auriu': ['nude-auriu'],
-  'transparent': ['silicon', 'transparent']
+  'mov-lavanda': ['mov-lavanda', 'lavanda'],
+  'mov metalizat': ['mov-metalizat'],
+  
+  // Metallics
+  'auriu': ['aurii', 'auriu', 'gold'],
+  'auriu-rose': ['auriu-rose', 'rose-gold'],
+  'auriu-negru': ['auriu-negru'],
+  'argintiu': ['argintii', 'argintiu', 'silver'],
+  'argintiu-negru': ['argintiu-negru'],
+  'argintiu-oglinda': ['argintiu-oglinda'],
+  
+  // Special
+  'transparent': ['silicon', 'transparent'],
+  'animal print': ['animal-print', 'leopard'],
+  
+  // Combos
+  'alb-negru': ['alb-negru'],
+  'alb/auriu': ['alb-auriu'],
+  'alb/negru': ['alb-negru'],
 };
 
 // Try to build color-specific URL
