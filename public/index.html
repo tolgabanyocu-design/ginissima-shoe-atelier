@@ -1474,7 +1474,13 @@ async function generateOne(type) {
           role: 'user',
           parts: [
             { inlineData: { mimeType: mime, data: rawB64 } },
-            { text: `Study this shoe. Describe its structural details: silhouette, back/strap construction (slingback? pump?), toe shape, cutline of upper, d'Orsay opening if any, buckle/hardware, heel shape/form (block? tapered?), sole profile. Under 100 words. Do NOT describe color or material.` }
+            { text: `Study this shoe carefully. Count and describe EXACTLY:
+1. STRAPS: How many straps? What is their arrangement/pattern? Are they smooth, braided, beaded, crystal-covered, or textured?
+2. BACK: Slingback, pump, ankle strap, or open?
+3. TOE: Pointed, round, square, open?
+4. HEEL: Shape (stiletto, block, kitten, flat)?
+5. HARDWARE: Buckles, studs, decorations?
+Be PRECISE about strap count and texture. Under 100 words. Do NOT describe color.` }
           ]
         }];
 
@@ -1503,10 +1509,15 @@ async function generateOne(type) {
             role: 'user',
             parts: [
               { inlineData: { mimeType: mime, data: rawB64 } },
-              { text: `Your analysis above is a BINDING CONTRACT. DO NOT CHANGE:
-• BACK: If slingback, output MUST be slingback. Do NOT make it a pump.
-• HEEL SHAPE: Keep same form (block stays block, etc). Only height changes.
-• TOE/CUTLINE/HARDWARE: Preserve exactly.
+              { text: `Your analysis above is a BINDING CONTRACT. STRICT RULES:
+
+NEVER CHANGE THESE (copy EXACTLY from original):
+• STRAP COUNT: If original has 3 straps, output MUST have exactly 3 straps. NOT 4, NOT 2.
+• STRAP TEXTURE: If straps are beaded/crystal/rhinestone, keep them beaded/crystal. Do NOT make them smooth leather.
+• STRAP ARRANGEMENT: Keep the exact same knotting, crossing, or braiding pattern.
+• BACK STYLE: If slingback, stay slingback. If pump, stay pump.
+• TOE SHAPE: Preserve exactly.
+• HARDWARE: Keep all buckles, studs, decorations in same positions.
 
 ${changeInstructions}
 
