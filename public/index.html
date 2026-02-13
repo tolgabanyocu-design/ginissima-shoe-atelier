@@ -740,13 +740,13 @@ const SAMPLE_PRODUCTS = [
 // ══════════════════════════════════════════════════════════════
 const HEELS = [
   { id:'flat', label:'Plat', height:'0–2 cm', visual:'completely flat sole with no heel piece at all' },
-  { id:'6cm', label:'6 cm', height:'6 cm', visual:'a low-mid heel approximately 6 cm tall, keeping the same heel shape/style as the original' },
-  { id:'6.5cm', label:'6.5 cm', height:'6.5 cm', visual:'a low-mid heel approximately 6.5 cm tall, keeping the same heel shape/style as the original' },
-  { id:'8cm', label:'8 cm', height:'8 cm', visual:'a medium heel approximately 8 cm tall, keeping the same heel shape/style as the original' },
-  { id:'9.5cm', label:'9.5 cm', height:'9.5 cm', visual:'a high heel approximately 9.5 cm tall, keeping the same heel shape/style as the original' },
-  { id:'10cm', label:'10 cm', height:'10 cm', visual:'a high stiletto heel approximately 10 cm tall' },
-  { id:'11cm', label:'11 cm', height:'11 cm', visual:'a very high stiletto heel approximately 11 cm tall' },
-  { id:'14cm', label:'14 cm', height:'14 cm', visual:'an extreme high stiletto heel approximately 14 cm tall' },
+  { id:'6cm', label:'6 cm', height:'6 cm', visual:'an elegant slim heel approximately 6 cm tall - if original has a heel, keep similar style; if original is flat, use a slim elegant stiletto-style heel' },
+  { id:'6.5cm', label:'6.5 cm', height:'6.5 cm', visual:'an elegant slim heel approximately 6.5 cm tall - if original has a heel, keep similar style; if original is flat, use a slim elegant stiletto-style heel' },
+  { id:'8cm', label:'8 cm', height:'8 cm', visual:'an elegant slim heel approximately 8 cm tall - if original has a heel, keep similar style; if original is flat, use a slim elegant stiletto-style heel' },
+  { id:'9.5cm', label:'9.5 cm', height:'9.5 cm', visual:'an elegant slim stiletto heel approximately 9.5 cm tall - slim and refined, NOT chunky or block heel' },
+  { id:'10cm', label:'10 cm', height:'10 cm', visual:'a high elegant stiletto heel approximately 10 cm tall - slim and refined, NOT chunky or block heel' },
+  { id:'11cm', label:'11 cm', height:'11 cm', visual:'a very high slim stiletto heel approximately 11 cm tall - elegant and slender, NOT chunky or block heel' },
+  { id:'14cm', label:'14 cm', height:'14 cm', visual:'an extreme high slim stiletto heel approximately 14 cm tall - very slender and elegant' },
 ];
 const MATERIALS = [
   { id:'piele naturala', label:'Piele Naturală', texture:'smooth polished natural leather with subtle grain' },
@@ -1439,18 +1439,24 @@ async function generateOne(type) {
   const isOriginalColor = !selectedColor || selectedColor.id === 'original';
   const allOriginal = isPreviewMode || (isOriginalHeel && isOriginalMaterial && isOriginalColor);
 
-  // Heel guidance — only changes height, preserves original heel shape
+  // Heel guidance — for flats going to heels, specify elegant stiletto style
   const heelGuide = isPreviewMode || isOriginalHeel
     ? 'Keep the ORIGINAL heel height exactly as shown.'
     : selectedHeel.id === 'flat'
     ? 'Remove the heel completely — flat sole with zero elevation.'
     : selectedHeel.id === '6cm'
-    ? 'Adjust heel height to 6 cm, keeping the SAME heel shape as original.'
+    ? 'Add a 6 cm heel. If original has a heel, keep similar style. If original is flat, use an elegant slim stiletto-style heel - NOT a chunky block heel.'
+    : selectedHeel.id === '6.5cm'
+    ? 'Add a 6.5 cm heel. If original has a heel, keep similar style. If original is flat, use an elegant slim stiletto-style heel - NOT a chunky block heel.'
     : selectedHeel.id === '8cm'
-    ? 'Adjust heel height to 8 cm, keeping the SAME heel shape as original.'
+    ? 'Add an 8 cm heel. If original has a heel, keep similar style. If original is flat, use an elegant slim stiletto-style heel - NOT a chunky block heel.'
     : selectedHeel.id === '9.5cm'
-    ? 'Adjust heel height to 9.5 cm, keeping the SAME heel shape as original.'
-    : 'Adjust to 11 cm needle-thin stiletto.';
+    ? 'Add a 9.5 cm elegant slim stiletto heel - refined and slender, NOT a chunky block heel.'
+    : selectedHeel.id === '10cm'
+    ? 'Add a 10 cm elegant slim stiletto heel - refined and slender, NOT a chunky block heel.'
+    : selectedHeel.id === '11cm'
+    ? 'Add an 11 cm needle-thin stiletto heel - very slim and elegant.'
+    : 'Add a 14 cm extreme stiletto heel - very slim and elegant.';
 
   try {
     if (type === 'product') {
