@@ -960,6 +960,11 @@ let lastProductImageB64 = null;
 let productImageB64 = null; // Loaded from selected product
 let currentMode = 'preview'; // 'preview' or 'customize'
 
+// Track if options were auto-selected (single option = treat as "keep original")
+let heelAutoSelected = false;
+let materialAutoSelected = false;
+let colorAutoSelected = false;
+
 // ══════════════════════════════════════════════════════════════
 // MODE SWITCHING
 // ══════════════════════════════════════════════════════════════
@@ -1160,6 +1165,11 @@ async function selectProduct(modelId) {
   selectedOccasion = null;
   lastProductImageB64 = null;
   productImageB64 = null;
+  
+  // Reset auto-select flags
+  heelAutoSelected = false;
+  materialAutoSelected = false;
+  colorAutoSelected = false;
 
   // Update catalog UI
   renderCatalog(document.getElementById('catalog-search').value);
@@ -1206,20 +1216,22 @@ async function loadProductImage() {
 // BUILD OPTIONS (filtered by product availability)
 // ══════════════════════════════════════════════════════════════
 function buildHeelOptions() {
-  const available = (selectedProduct.heels || '').split(',').map(s => s.trim().toLowerCase()).filter(s => s);
+  const available = (selectedProduct.heels || '').split(/[,;]/).map(s => s.trim().toLowerCase()).filter(s => s);
   const row = document.getElementById('heel-row');
   const section = document.getElementById('heel-section');
   const availableHeels = HEELS.filter(h => available.includes(h.id));
   
-  // If only 1 option, auto-select and hide the section
+  // If only 1 option, auto-select and hide the section - mark as auto-selected
   if (availableHeels.length <= 1) {
     selectedHeel = availableHeels[0] || null;
+    heelAutoSelected = true; // Treat as "keep original"
     if (section) section.style.display = 'none';
     row.innerHTML = '';
     return;
   }
   
-  // Show section if multiple options
+  // Multiple options - user must choose
+  heelAutoSelected = false;
   if (section) section.style.display = '';
   
   row.innerHTML = availableHeels.map(h => {
@@ -1237,20 +1249,22 @@ function buildHeelOptions() {
 }
 
 function buildMaterialOptions() {
-  const available = (selectedProduct.materials || '').split(',').map(s => s.trim().toLowerCase()).filter(s => s);
+  const available = (selectedProduct.materials || '').split(/[,;]/).map(s => s.trim().toLowerCase()).filter(s => s);
   const row = document.getElementById('material-row');
   const section = document.getElementById('material-section');
   const availableMaterials = MATERIALS.filter(m => available.includes(m.id));
   
-  // If only 1 option, auto-select and hide the section
+  // If only 1 option, auto-select and hide the section - mark as auto-selected
   if (availableMaterials.length <= 1) {
     selectedMaterial = availableMaterials[0] || null;
+    materialAutoSelected = true; // Treat as "keep original"
     if (section) section.style.display = 'none';
     row.innerHTML = '';
     return;
   }
   
-  // Show section if multiple options
+  // Multiple options - user must choose
+  materialAutoSelected = false;
   if (section) section.style.display = '';
   
   row.innerHTML = availableMaterials.map(m => {
@@ -1259,21 +1273,23 @@ function buildMaterialOptions() {
 }
 
 function buildColorOptions() {
-  const available = (selectedProduct.colors || '').split(',').map(s => s.trim().toLowerCase()).filter(s => s);
+  const available = (selectedProduct.colors || '').split(/[,;]/).map(s => s.trim().toLowerCase()).filter(s => s);
   const row = document.getElementById('color-row');
   const section = document.getElementById('color-section');
   const availableColors = COLORS.filter(c => available.includes(c.id));
   
-  // If only 1 option, auto-select and hide the section
+  // If only 1 option, auto-select and hide the section - mark as auto-selected
   if (availableColors.length <= 1) {
     selectedColor = availableColors[0] || null;
+    colorAutoSelected = true; // Treat as "keep original"
     if (section) section.style.display = 'none';
     row.innerHTML = '';
     document.getElementById('color-label').textContent = '';
     return;
   }
   
-  // Show section if multiple options
+  // Multiple options - user must choose
+  colorAutoSelected = false;
   if (section) section.style.display = '';
   
   row.innerHTML = availableColors.map(c => {
@@ -1470,10 +1486,11 @@ async function generateOne(type) {
   // Check if we're in preview mode (no customization)
   const isPreviewMode = currentMode === 'preview';
   
-  // Check if all selections are "original" (no changes) - only relevant in customize mode
-  const isOriginalHeel = !selectedHeel || selectedHeel.id === 'original';
-  const isOriginalMaterial = !selectedMaterial || selectedMaterial.id === 'original';
-  const isOriginalColor = !selectedColor || selectedColor.id === 'original';
+  // Check if selections are "original" (no changes)
+  // Auto-selected options (single option available) should be treated as "keep original"
+  const isOriginalHeel = !selectedHeel || selectedHeel.id === 'original' || heelAutoSelected;
+  const isOriginalMaterial = !selectedMaterial || selectedMaterial.id === 'original' || materialAutoSelected;
+  const isOriginalColor = !selectedColor || selectedColor.id === 'original' || colorAutoSelected;
   const allOriginal = isPreviewMode || (isOriginalHeel && isOriginalMaterial && isOriginalColor);
 
   // Heel guidance — for flats going to heels, specify elegant stiletto style
@@ -1512,13 +1529,13 @@ async function generateOne(type) {
           parts: [
             { inlineData: { mimeType: mime, data: rawB64 } },
             { text: `Study this shoe carefully. Count and describe EXACTLY:
-1. STRAPS: How many straps? What is their arrangement/pattern? Are they smooth, braided, beaded, crystal-covered, or textured?
-2. ORNAMENTS: Any decorative elements like flowers, bows, rosettes, brooches? Describe their color and material separately from the shoe.
+1. STRAPS: How many straps? What is their arrangement/pattern? Are they smooth, braided, beaded, crystal-covered, or textured? What COLOR are the straps - same as shoe body or DIFFERENT (contrasting)?
+2. ORNAMENTS/ACCENTS: Any decorative elements like flowers, bows, rosettes, brooches, crystals? Any parts in a DIFFERENT COLOR than the main shoe? Describe their color and material.
 3. BACK: Slingback, pump, ankle strap, or open?
 4. TOE: Pointed, round, square, open?
 5. HEEL: Shape (stiletto, block, kitten, flat)? Platform?
 6. HARDWARE: Buckles, studs, decorations?
-Be PRECISE about strap count, ornament colors, and textures. Under 120 words. Do NOT describe the main shoe color.` }
+Be PRECISE about strap count, any CONTRASTING colors on straps/details, and textures. Under 120 words.` }
           ]
         }];
 
