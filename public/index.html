@@ -156,6 +156,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .sim-model-name { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 600; margin-bottom: 4px; }
 .sim-model-hint { font-size: 12px; color: var(--text3); }
 
+/* Mobile back button - hidden on desktop */
+.mobile-back-btn { display: none; }
+
 .sim-section { margin-bottom: 28px; }
 .sim-label { font-size: 11px; color: #555; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 12px; font-weight: 600; }
 
@@ -397,6 +400,24 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   .product-title { font-size: 20px; }
   .product-subtitle { font-size: 12px; }
   
+  /* Mobile back button */
+  .mobile-back-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    margin-bottom: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .mobile-back-btn:hover { background: var(--border); }
+  
   .option-group { margin-bottom: 20px; }
   .option-label { font-size: 11px; margin-bottom: 10px; }
   
@@ -519,6 +540,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 
       <!-- Simulator UI (after selection) -->
       <div id="simulator-ui" style="display:none;">
+        <!-- Mobile back button -->
+        <button class="mobile-back-btn" onclick="scrollToCatalog()">← Înapoi la Catalog</button>
+        
         <div class="sim-header">
           <div class="sim-model-name" id="sim-model-name">Model Name</div>
           <div class="sim-model-hint">Personalizează-ți designul mai jos</div>
@@ -1228,6 +1252,13 @@ async function selectProduct(modelId) {
   await loadProductImage();
 
   updateGenButton();
+  
+  // Auto-scroll to simulator on mobile (screen width < 900px)
+  if (window.innerWidth < 900) {
+    setTimeout(() => {
+      document.getElementById('simulator-ui').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }
 }
 
 async function loadProductImage() {
@@ -1242,6 +1273,14 @@ async function loadProductImage() {
   } catch (err) {
     console.error('Failed to load product image:', err);
     productImageB64 = null;
+  }
+}
+
+// Scroll back to catalog on mobile
+function scrollToCatalog() {
+  const catalogPanel = document.querySelector('.catalog-panel');
+  if (catalogPanel) {
+    catalogPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 }
 
