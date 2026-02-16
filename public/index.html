@@ -1565,24 +1565,24 @@ async function generateOne(type) {
   const isOriginalColor = !selectedColor || selectedColor.id === 'original' || colorAutoSelected;
   const allOriginal = isPreviewMode || (isOriginalHeel && isOriginalMaterial && isOriginalColor);
 
-  // Heel guidance — for flats going to heels, specify elegant stiletto style
+  // Heel guidance — preserve original heel SHAPE (block/stiletto), only change HEIGHT
   const heelGuide = isPreviewMode || isOriginalHeel
     ? 'Keep the ORIGINAL heel height exactly as shown.'
     : selectedHeel.id === 'flat'
     ? 'Remove the heel completely — flat sole with zero elevation.'
     : selectedHeel.id === '6cm'
-    ? 'Add a 6 cm heel. If original has a heel, keep similar style. If original is flat, use an elegant slim stiletto-style heel - NOT a chunky block heel.'
+    ? 'Adjust to 6 cm heel. CRITICAL: Keep the SAME heel SHAPE as the original. If original is block/chunky heel, output must be block/chunky. If original is stiletto/thin, output must be stiletto/thin. If original is flat, use elegant stiletto.'
     : selectedHeel.id === '6.5cm'
-    ? 'Add a 6.5 cm heel. If original has a heel, keep similar style. If original is flat, use an elegant slim stiletto-style heel - NOT a chunky block heel.'
+    ? 'Adjust to 6.5 cm heel. CRITICAL: Keep the SAME heel SHAPE as the original. If original is block/chunky heel, output must be block/chunky. If original is stiletto/thin, output must be stiletto/thin. If original is flat, use elegant stiletto.'
     : selectedHeel.id === '8cm'
-    ? 'Add an 8 cm heel. If original has a heel, keep similar style. If original is flat, use an elegant slim stiletto-style heel - NOT a chunky block heel.'
+    ? 'Adjust to 8 cm heel. CRITICAL: Keep the SAME heel SHAPE as the original. If original is block/chunky heel, output must be block/chunky. If original is stiletto/thin, output must be stiletto/thin. If original is flat, use elegant stiletto.'
     : selectedHeel.id === '9.5cm'
-    ? 'Add a 9.5 cm elegant slim stiletto heel - refined and slender, NOT a chunky block heel.'
+    ? 'Adjust to 9.5 cm heel. CRITICAL: Keep the SAME heel SHAPE as the original. If original is block/chunky heel, output must be block/chunky. If original is stiletto/thin, output must be stiletto/thin. If original is flat, use elegant stiletto.'
     : selectedHeel.id === '10cm'
-    ? 'Add a 10 cm elegant slim stiletto heel - refined and slender, NOT a chunky block heel.'
+    ? 'Adjust to 10 cm heel. CRITICAL: Keep the SAME heel SHAPE as the original. If original is block/chunky heel, output must be block/chunky. If original is stiletto/thin, output must be stiletto/thin. If original is flat, use elegant stiletto.'
     : selectedHeel.id === '11cm'
-    ? 'Add an 11 cm needle-thin stiletto heel - very slim and elegant.'
-    : 'Add a 14 cm extreme stiletto heel - very slim and elegant.';
+    ? 'Adjust to 11 cm heel. CRITICAL: Keep the SAME heel SHAPE as the original. If original is block/chunky heel, output must be block/chunky. If original is stiletto/thin, output must be stiletto/thin. If original is flat, use elegant stiletto.'
+    : 'Adjust to 14 cm heel. CRITICAL: Keep the SAME heel SHAPE as the original. If original is block/chunky heel, output must be block/chunky. If original is stiletto/thin, output must be stiletto/thin. If original is flat, use elegant stiletto.';
 
   try {
     if (type === 'product') {
@@ -1639,11 +1639,12 @@ Be PRECISE about strap count, any CONTRASTING colors on straps/details, and text
               { text: `Your analysis above is a BINDING CONTRACT. STRICT RULES:
 
 NEVER CHANGE THESE (copy EXACTLY from original):
+• HEEL SHAPE/STYLE: If original has BLOCK/CHUNKY heel, output MUST have block/chunky heel. If original has STILETTO/THIN heel, output MUST have stiletto/thin heel. ONLY the height changes, NOT the shape.
 • STRAP COUNT: If original has 3 straps, output MUST have exactly 3 straps. NOT 4, NOT 2.
 • STRAP TEXTURE: If straps are beaded/crystal/rhinestone, keep them beaded/crystal. Do NOT make them smooth leather.
 • STRAP ARRANGEMENT: Keep the exact same knotting, crossing, or braiding pattern.
 • ORNAMENTS: Any flowers, bows, rosettes, or decorations must keep their ORIGINAL COLOR and material. If there's a black flower, it stays BLACK even if the shoe color changes. Do NOT change ornament colors.
-• BACK STYLE: If slingback, stay slingback. If pump, stay pump. If ankle strap, keep ankle strap.
+• BACK STYLE: If slingback, stay slingback. If pump, stay pump. If ankle strap, keep ankle strap. If mule/open back, stay mule/open back.
 • TOE SHAPE: Preserve exactly.
 • PLATFORM: If original has a platform, keep the platform.
 • HARDWARE: Keep all buckles, studs, decorations in same positions.
