@@ -1494,9 +1494,21 @@ function updateApiStatus() {
 // ══════════════════════════════════════════════════════════════
 // GENERATION
 // ══════════════════════════════════════════════════════════════
-async function callGeminiMultiTurn(messages) {
+const GEMINI_MODELS = [
+  'gemini-2.5-flash-preview-image-generation',
+  'gemini-2.5-flash-image'
+];
+
+async function callGeminiMultiTurn(messages, modelIndex = 0) {
+  if (modelIndex >= GEMINI_MODELS.length) {
+    throw new Error('Toate modelele de generare sunt indisponibile. Încercați mai târziu.');
+  }
+  
+  const model = GEMINI_MODELS[modelIndex];
+  console.log(`Trying model: ${model}`);
+  
   const resp = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1506,17 +1518,22 @@ async function callGeminiMultiTurn(messages) {
       }),
     }
   );
+  
   if (!resp.ok) {
     const errText = await resp.text();
+    console.log(`Model ${model} failed: ${resp.status}`);
+    
+    // If 503 or 500, try next model
+    if (resp.status === 503 || resp.status === 500) {
+      console.log(`Trying fallback model...`);
+      return callGeminiMultiTurn(messages, modelIndex + 1);
+    }
+    
     // User-friendly error messages in Romanian
-    if (resp.status === 503) {
-      throw new Error('Serviciul de generare imagini este temporar indisponibil. Vă rugăm încercați din nou în câteva minute.');
-    } else if (resp.status === 429) {
+    if (resp.status === 429) {
       throw new Error('Prea multe cereri. Vă rugăm așteptați un minut și încercați din nou.');
     } else if (resp.status === 401 || resp.status === 403) {
       throw new Error('Cheie API invalidă sau expirată. Vă rugăm contactați suportul.');
-    } else if (resp.status === 500) {
-      throw new Error('Eroare la serverul Google. Vă rugăm încercați din nou în câteva minute.');
     } else {
       throw new Error(`Eroare ${resp.status}: Vă rugăm încercați din nou.`);
     }
