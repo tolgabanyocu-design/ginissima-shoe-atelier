@@ -1496,7 +1496,7 @@ function updateApiStatus() {
 // ══════════════════════════════════════════════════════════════
 async function callGeminiMultiTurn(messages) {
   const resp = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1508,12 +1508,23 @@ async function callGeminiMultiTurn(messages) {
   );
   if (!resp.ok) {
     const errText = await resp.text();
-    throw new Error(`API ${resp.status}: ${errText.substring(0, 200)}`);
+    // User-friendly error messages in Romanian
+    if (resp.status === 503) {
+      throw new Error('Serviciul de generare imagini este temporar indisponibil. Vă rugăm încercați din nou în câteva minute.');
+    } else if (resp.status === 429) {
+      throw new Error('Prea multe cereri. Vă rugăm așteptați un minut și încercați din nou.');
+    } else if (resp.status === 401 || resp.status === 403) {
+      throw new Error('Cheie API invalidă sau expirată. Vă rugăm contactați suportul.');
+    } else if (resp.status === 500) {
+      throw new Error('Eroare la serverul Google. Vă rugăm încercați din nou în câteva minute.');
+    } else {
+      throw new Error(`Eroare ${resp.status}: Vă rugăm încercați din nou.`);
+    }
   }
   const data = await resp.json();
   const candidate = data.candidates?.[0];
-  if (!candidate) throw new Error('No response from API');
-  if (candidate.finishReason === 'SAFETY') throw new Error('Blocked by safety filters');
+  if (!candidate) throw new Error('Nu s-a putut genera imaginea. Vă rugăm încercați din nou.');
+  if (candidate.finishReason === 'SAFETY') throw new Error('Imaginea nu a putut fi generată din motive de siguranță. Încercați alte opțiuni.');
 
   let imgData = null, textData = '';
   for (const part of candidate.content?.parts || []) {
