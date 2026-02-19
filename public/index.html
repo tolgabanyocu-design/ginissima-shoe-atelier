@@ -1508,23 +1508,25 @@ async function callGeminiMultiTurn(messages, modelIndex = 0) {
   console.log(`Trying model: ${model}`);
   
   const resp = await fetch(
-    `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: messages,
-        generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
+        generationConfig: { 
+          responseModalities: ['Text', 'Image']
+        },
       }),
     }
   );
   
   if (!resp.ok) {
     const errText = await resp.text();
-    console.log(`Model ${model} failed: ${resp.status}`);
+    console.log(`Model ${model} failed: ${resp.status} - ${errText.substring(0, 200)}`);
     
-    // If 503, 500, or 404, try next model
-    if (resp.status === 503 || resp.status === 500 || resp.status === 404) {
+    // Try next model on any server/client error
+    if (modelIndex < GEMINI_MODELS.length - 1) {
       console.log(`Trying fallback model...`);
       return callGeminiMultiTurn(messages, modelIndex + 1);
     }
