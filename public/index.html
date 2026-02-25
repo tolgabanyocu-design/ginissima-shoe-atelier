@@ -1600,18 +1600,18 @@ async function generateOne(type) {
     : selectedHeel.id === 'flat'
     ? 'Remove the heel completely — flat sole with zero elevation.'
     : selectedHeel.id === '6cm'
-    ? 'Adjust to 6 cm heel. CRITICAL: Keep the SAME heel SHAPE as the original. If original is block/chunky heel, output must be block/chunky. If original is stiletto/thin, output must be stiletto/thin. If original is flat, use elegant stiletto.'
+    ? 'Adjust to 6 cm heel. Use elegant slim STILETTO style, UNLESS the original shoe has a distinctive TALL block/chunky heel (6cm+), then keep block style.'
     : selectedHeel.id === '6.5cm'
-    ? 'Adjust to 6.5 cm heel. CRITICAL: Keep the SAME heel SHAPE as the original. If original is block/chunky heel, output must be block/chunky. If original is stiletto/thin, output must be stiletto/thin. If original is flat, use elegant stiletto.'
+    ? 'Adjust to 6.5 cm heel. Use elegant slim STILETTO style, UNLESS the original shoe has a distinctive TALL block/chunky heel (6cm+), then keep block style.'
     : selectedHeel.id === '8cm'
-    ? 'Adjust to 8 cm heel. CRITICAL: Keep the SAME heel SHAPE as the original. If original is block/chunky heel, output must be block/chunky. If original is stiletto/thin, output must be stiletto/thin. If original is flat, use elegant stiletto.'
+    ? 'Adjust to 8 cm heel. Use elegant slim STILETTO style, UNLESS the original shoe has a distinctive TALL block/chunky heel (6cm+), then keep block style.'
     : selectedHeel.id === '9.5cm'
-    ? 'Adjust to 9.5 cm heel. CRITICAL: Keep the SAME heel SHAPE as the original. If original is block/chunky heel, output must be block/chunky. If original is stiletto/thin, output must be stiletto/thin. If original is flat, use elegant stiletto.'
+    ? 'Adjust to 9.5 cm heel. Use elegant slim STILETTO style, UNLESS the original shoe has a distinctive TALL block/chunky heel (6cm+), then keep block style.'
     : selectedHeel.id === '10cm'
-    ? 'Adjust to 10 cm heel. CRITICAL: Keep the SAME heel SHAPE as the original. If original is block/chunky heel, output must be block/chunky. If original is stiletto/thin, output must be stiletto/thin. If original is flat, use elegant stiletto.'
+    ? 'Adjust to 10 cm heel. Use elegant slim STILETTO style, UNLESS the original shoe has a distinctive TALL block/chunky heel (6cm+), then keep block style.'
     : selectedHeel.id === '11cm'
-    ? 'Adjust to 11 cm heel. CRITICAL: Keep the SAME heel SHAPE as the original. If original is block/chunky heel, output must be block/chunky. If original is stiletto/thin, output must be stiletto/thin. If original is flat, use elegant stiletto.'
-    : 'Adjust to 14 cm heel. CRITICAL: Keep the SAME heel SHAPE as the original. If original is block/chunky heel, output must be block/chunky. If original is stiletto/thin, output must be stiletto/thin. If original is flat, use elegant stiletto.';
+    ? 'Adjust to 11 cm heel. Use slim STILETTO style - needle-thin and elegant.'
+    : 'Adjust to 14 cm heel. Use extreme slim STILETTO style - needle-thin and very elegant.';
 
   try {
     if (type === 'product') {
@@ -1632,11 +1632,17 @@ async function generateOne(type) {
             { text: `Study this shoe carefully. Count and describe EXACTLY:
 1. STRAPS: How many straps? What is their arrangement/pattern? Are they smooth, braided, beaded, crystal-covered, or textured? What COLOR are the straps - same as shoe body or DIFFERENT (contrasting)?
 2. ORNAMENTS/ACCENTS: Any decorative elements like flowers, bows, rosettes, brooches, crystals? Any parts in a DIFFERENT COLOR than the main shoe? Describe their color and material.
-3. BACK: Slingback, pump, ankle strap, or open?
+3. BACK STYLE (CRITICAL - describe precisely): 
+   - Is the back LOW-CUT (exposing heel) or HIGH (covering heel)?
+   - SLINGBACK = LOW-CUT back with thin strap across, heel exposed, sides cut low
+   - PUMP = HIGH back, fully closed, no exposure
+   - ANKLE STRAP = strap around ankle
+   - MULE = completely open, no strap
+   Where exactly does any strap attach to the shoe body?
 4. TOE: Pointed, round, square, open?
 5. HEEL: Shape (stiletto, block, kitten, flat)? Platform?
 6. HARDWARE: Buckles, studs, decorations?
-Be PRECISE about strap count, any CONTRASTING colors on straps/details, and textures. Under 120 words.` }
+Be PRECISE about back style and strap attachment points. Under 120 words.` }
           ]
         }];
 
@@ -1668,12 +1674,18 @@ Be PRECISE about strap count, any CONTRASTING colors on straps/details, and text
               { text: `Your analysis above is a BINDING CONTRACT. STRICT RULES:
 
 NEVER CHANGE THESE (copy EXACTLY from original):
-• HEEL SHAPE/STYLE: If original has BLOCK/CHUNKY heel, output MUST have block/chunky heel. If original has STILETTO/THIN heel, output MUST have stiletto/thin heel. ONLY the height changes, NOT the shape.
+• HEEL STYLE: Default to slim STILETTO for all heel heights (6-14cm). ONLY use block/chunky heel if the original shoe has a distinctive TALL block heel (6cm+). Flat or low-heel originals always get stiletto.
 • STRAP COUNT: If original has 3 straps, output MUST have exactly 3 straps. NOT 4, NOT 2.
 • STRAP TEXTURE: If straps are beaded/crystal/rhinestone, keep them beaded/crystal. Do NOT make them smooth leather.
 • STRAP ARRANGEMENT: Keep the exact same knotting, crossing, or braiding pattern.
 • ORNAMENTS: Any flowers, bows, rosettes, or decorations must keep their ORIGINAL COLOR and material. If there's a black flower, it stays BLACK even if the shoe color changes. Do NOT change ornament colors.
-• BACK STYLE: If slingback, stay slingback. If pump, stay pump. If ankle strap, keep ankle strap. If mule/open back, stay mule/open back.
+• BACK STYLE - CRITICAL: 
+  - SLINGBACK = thin strap across the BACK of the heel with LOW-CUT sides. The back of the shoe is cut LOW (exposing the heel) and a thin strap connects across. Do NOT fill in the sides or back - keep the open, low-cut silhouette!
+  - If original is slingback, the output MUST keep: (1) the low-cut back exposing the heel, (2) the thin strap in same position, (3) same attachment points where strap meets shoe.
+  - Do NOT convert slingback to pump by filling in the back/sides!
+  - PUMP = fully closed back and sides, high back coverage.
+  - ANKLE STRAP = strap goes AROUND the ankle (higher than slingback).
+  - MULE = completely open back, no strap at all.
 • TOE SHAPE: Preserve exactly.
 • PLATFORM: If original has a platform, keep the platform.
 • HARDWARE: Keep all buckles, studs, decorations in same positions.
