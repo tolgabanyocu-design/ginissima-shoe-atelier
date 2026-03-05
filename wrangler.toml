@@ -1,0 +1,12 @@
+name = "ginissima-cloudflare"
+compatibility_date = "2024-01-01"
+main = "_worker.js"
+
+routes = [
+  { pattern = "www.ginissima-designer.com/*", zone_name = "ginissima-designer.com" },
+  { pattern = "ginissima-designer.com/*", zone_name = "ginissima-designer.com" }
+]
+
+[assets]
+directory = "./"
+binding = "ASSETS"

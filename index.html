@@ -1,0 +1,2678 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ginissima's Shoe Atelier — Design Your Own</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #ffffff; --surface: #f8f8f8; --surface2: #f5f5f5; --border: #e5e5e5;
+  --border2: #d0d0d0; --gold: #c9a84c; --gold-dark: #a8862e;
+  --text: #1a1a1a; --text2: #444; --text3: #666; --text4: #999;
+  --green: #2d8a4e; --green-bg: #e8f5ec; --red: #c41e3a; --red-bg: #fef2f2;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+/* Header */
+.header {
+  padding: 16px 28px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(255,255,255,.95); backdrop-filter: blur(20px);
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+}
+.logo-wrap { display: flex; align-items: center; gap: 14px; }
+.logo-icon { width: 42px; height: 42px; border-radius: 10px; background: linear-gradient(135deg, var(--gold), var(--gold-dark)); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.brand-name { font-family: 'Oswald', sans-serif; font-size: 24px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); }
+.brand-sub { font-size: 9px; color: var(--text3); letter-spacing: .14em; text-transform: uppercase; margin-top: 2px; font-family: 'DM Sans', sans-serif; }
+.header-right { display: flex; align-items: center; gap: 16px; }
+.api-status { font-size: 10px; color: var(--green); background: var(--green-bg); padding: 4px 12px; border-radius: 100px; display: none; }
+.api-btn {
+  padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border2);
+  background: var(--surface); color: var(--text2); font-size: 12px;
+  cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .2s;
+}
+.api-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+/* Main Layout */
+.main-wrap { display: flex; height: 100vh; padding-top: 71px; }
+
+/* Left Panel — Catalog */
+.catalog-panel {
+  width: 380px; min-width: 380px; border-right: 1px solid var(--border);
+  background: var(--surface2); display: flex; flex-direction: column;
+}
+.catalog-header {
+  padding: 20px 20px 16px; border-bottom: 1px solid var(--border);
+}
+.catalog-title { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+.catalog-subtitle { font-size: 11px; color: var(--text3); }
+.catalog-search {
+  margin: 16px 20px 12px; padding: 10px 14px; border-radius: 10px;
+  border: 1px solid var(--border2); background: var(--bg); color: var(--text);
+  font-size: 13px; font-family: 'DM Sans', sans-serif; outline: none; width: calc(100% - 40px);
+}
+.catalog-search:focus { border-color: var(--gold); }
+.catalog-search::placeholder { color: var(--text4); }
+
+/* Category List */
+.category-list { padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.category-btn {
+  display: flex; align-items: center; gap: 12px; padding: 16px 18px;
+  background: var(--surface); border: 2px solid var(--border); border-radius: 12px;
+  cursor: pointer; transition: all .25s; text-align: left;
+}
+.category-btn:hover { border-color: var(--border2); background: rgba(0,0,0,.02); }
+.category-btn.active { border-color: var(--gold); background: rgba(201,168,76,.08); }
+.cat-icon { font-size: 24px; }
+.cat-label { flex: 1; font-size: 14px; font-weight: 500; color: var(--text); }
+.cat-count { font-size: 11px; color: var(--text3); background: var(--bg); padding: 3px 10px; border-radius: 100px; }
+
+/* Product List Section */
+.product-list-section { display: flex; flex-direction: column; height: 100%; }
+.product-list-header { 
+  display: flex; align-items: center; gap: 12px; padding: 12px 16px; 
+  border-bottom: 1px solid var(--border); 
+}
+.back-btn {
+  background: none; border: 1px solid var(--border2); color: var(--text2);
+  padding: 6px 12px; border-radius: 8px; font-size: 12px; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; transition: all .2s;
+}
+.back-btn:hover { border-color: var(--gold); color: var(--gold); }
+.current-category { font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 600; }
+
+.catalog-grid {
+  flex: 1; overflow-y: auto; padding: 12px 16px 24px; 
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  align-content: start;
+}
+.catalog-loading, .catalog-error {
+  padding: 40px 20px; text-align: center; color: var(--text3); font-size: 13px;
+}
+.catalog-error { color: var(--red); }
+
+/* Catalog Card */
+.model-card {
+  background: var(--bg); border-radius: 12px; overflow: hidden;
+  border: 2px solid var(--border); cursor: pointer; transition: all .25s;
+  min-height: 200px;
+}
+.model-card:hover { border-color: var(--border2); }
+.model-card.selected { border-color: var(--gold); background: rgba(201,168,76,.05); }
+.model-img-wrap { 
+  width: 100%; 
+  height: 140px;
+  min-height: 140px;
+  background: #f8f8f8; 
+  overflow: hidden; 
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.model-img-wrap img { 
+  max-width: 100%; 
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+.model-info { padding: 10px 12px; }
+.model-name { font-family: 'Playfair Display', serif; font-size: 12px; font-weight: 600; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.model-tags { display: flex; flex-wrap: wrap; gap: 3px; }
+.model-tag {
+  font-size: 8px; padding: 2px 6px; border-radius: 100px;
+  background: var(--bg); color: var(--text3); letter-spacing: .03em;
+}
+.model-tag.heel { border: 1px solid var(--border); }
+.model-tag.color { border: 1px solid var(--border); }
+.model-tag.material { border: 1px solid var(--border); }
+
+/* Right Panel — Simulator */
+.simulator-panel { flex: 1; overflow-y: auto; background: var(--bg); }
+.simulator-content { max-width: 900px; margin: 0 auto; padding: 32px 40px 80px; }
+
+/* Empty State */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: calc(100vh - 200px); text-align: center; color: var(--text3);
+}
+.empty-icon { font-size: 64px; margin-bottom: 20px; opacity: .3; }
+.empty-title { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--text2); margin-bottom: 8px; }
+.empty-hint { font-size: 13px; max-width: 280px; line-height: 1.6; }
+
+/* Simulator UI */
+.sim-header { margin-bottom: 28px; }
+.sim-model-name { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 600; margin-bottom: 4px; }
+.sim-model-hint { font-size: 12px; color: var(--text3); }
+
+/* Mobile back button - hidden on desktop */
+.mobile-back-btn { display: none; }
+
+.sim-section { margin-bottom: 28px; }
+.sim-label { font-size: 11px; color: #555; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 12px; font-weight: 600; }
+
+/* Heel buttons */
+.heel-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.heel-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 14px 8px; border-radius: 14px; min-width: 76px; cursor: pointer;
+  transition: all .25s; border: 2px solid var(--border); background: var(--bg);
+}
+.heel-btn:hover:not(.disabled) { border-color: var(--border2); }
+.heel-btn.active { border-color: var(--gold); background: rgba(201,168,76,.1); }
+.heel-btn.disabled { opacity: .3; cursor: not-allowed; }
+.heel-btn .label { font-size: 12px; font-weight: 400; color: var(--text2); }
+.heel-btn.active .label { font-weight: 600; color: var(--text); }
+.heel-btn .sub { font-size: 10px; color: var(--text3); }
+
+/* Chips */
+.chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip {
+  padding: 9px 18px; border-radius: 100px; cursor: pointer; white-space: nowrap;
+  border: 1.5px solid var(--border2); background: transparent; color: var(--text2);
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 400;
+  letter-spacing: .02em; transition: all .25s;
+}
+.chip:hover:not(.disabled) { border-color: var(--text3); }
+.chip.active { border-color: var(--gold); background: var(--gold); color: #111; font-weight: 600; }
+.chip.disabled { opacity: .3; cursor: not-allowed; }
+
+/* Color swatches */
+.swatch-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.swatch {
+  width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
+  border: 2px solid var(--border); transition: all .2s; flex-shrink: 0;
+}
+.swatch.active { border: 3px solid var(--text); }
+.swatch.disabled { opacity: .25; cursor: not-allowed; }
+.swatch.original-swatch { 
+  background: linear-gradient(135deg, #f5f5f5 25%, #e0e0e0 25%, #e0e0e0 50%, #f5f5f5 50%, #f5f5f5 75%, #e0e0e0 75%);
+  background-size: 8px 8px;
+  color: #666;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #999;
+}
+.swatch.original-swatch.active { 
+  border: 2px solid var(--gold); 
+  background: var(--gold);
+  color: white;
+}
+.color-label { margin-top: 8px; font-size: 12px; color: var(--text3); }
+
+/* Occasion cards */
+.occ-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.occ-card {
+  padding: 14px 10px; border-radius: 14px; cursor: pointer; transition: all .25s;
+  border: 2px solid var(--border); background: var(--bg); color: var(--text2);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  flex: 1 1 calc(25% - 8px); min-width: 90px;
+}
+.occ-card:hover { border-color: var(--border2); }
+.occ-card.active { border-color: var(--gold); background: var(--gold); color: #111; }
+.occ-card .emoji { font-size: 22px; }
+.occ-card .label { font-size: 11px; font-weight: 500; letter-spacing: .04em; }
+
+/* Mode Toggle */
+.mode-toggle-section { margin-bottom: 24px; }
+.mode-toggle { display: flex; flex-direction: column; gap: 10px; }
+.mode-btn {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 18px; border-radius: 12px;
+  border: 2px solid var(--border); background: var(--bg);
+  cursor: pointer; transition: all .25s;
+  text-align: left; width: 100%;
+}
+.mode-btn:hover { border-color: var(--border2); }
+.mode-btn.active { border-color: var(--gold); background: rgba(201,168,76,.08); }
+.mode-icon { font-size: 20px; }
+.mode-text { font-size: 13px; color: var(--text2); font-weight: 500; }
+.mode-btn.active .mode-text { color: var(--text); }
+
+.customization-options { 
+  border-top: 1px solid var(--border); 
+  padding-top: 20px; 
+  margin-top: 10px;
+}
+
+/* Generate button */
+.gen-section { margin-top: 36px; padding-top: 28px; border-top: 1px solid var(--border); }
+.gen-btn {
+  width: 100%; padding: 18px; border-radius: 14px; border: none;
+  font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 600;
+  letter-spacing: .05em; text-transform: uppercase; transition: all .3s; cursor: pointer;
+  background: var(--surface); color: var(--text4);
+}
+.gen-btn.ready { background: linear-gradient(135deg, var(--gold), var(--gold-dark)); color: #111; }
+.gen-btn.ready:hover { filter: brightness(1.1); }
+.gen-btn:disabled { background: var(--surface); color: var(--text4); cursor: not-allowed; }
+.gen-hint { margin-top: 10px; font-size: 11px; color: var(--text4); text-align: center; }
+
+/* Error */
+.error-box { padding: 14px 18px; border-radius: 14px; background: var(--red-bg); border: 1px solid #fca5a5; color: var(--red); font-size: 13px; margin-top: 20px; display: none; }
+
+/* Results */
+.results-section { margin-top: 40px; display: none; }
+.results-section.visible { display: block; }
+.results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.result-card { background: var(--surface2); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; }
+.result-header { padding: 14px 18px 10px; display: flex; align-items: center; justify-content: space-between; }
+.result-header .title { font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.regen-btn { background: none; border: 1px solid var(--border2); color: var(--text3); padding: 4px 10px; border-radius: 100px; font-size: 10px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+.regen-btn:hover { border-color: var(--text3); color: var(--text2); }
+.result-img-wrap { 
+  width: 100%; 
+  min-height: 250px;
+  background: var(--surface); 
+  position: relative; 
+  overflow: hidden; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  padding: 16px;
+}
+.result-img-wrap img { 
+  max-width: 100%; 
+  max-height: 400px;
+  width: auto;
+  height: auto;
+  object-fit: contain; 
+  display: block;
+}
+.result-loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+.spinner { width: 28px; height: 28px; border: 2.5px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin .8s linear infinite; }
+.progress-text { font-size: 10px; color: var(--text3); letter-spacing: .08em; text-transform: uppercase; }
+.shimmer-bar { width: 50%; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.shimmer-fill { width: 100%; height: 100%; background: linear-gradient(90deg, transparent, var(--gold), transparent); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+.result-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 6px; }
+.result-empty .icon { font-size: 32px; opacity: .15; }
+.result-empty .text { font-size: 11px; color: var(--text3); }
+
+/* Order CTA */
+.order-section { margin-top: 32px; padding: 24px; background: var(--surface); border-radius: 16px; border: 1px solid var(--border); display: none; }
+.order-section.visible { display: block; }
+.order-title { font-family: 'Playfair Display', serif; font-size: 18px; margin-bottom: 8px; }
+.order-summary { font-size: 13px; color: var(--text3); margin-bottom: 20px; line-height: 1.6; }
+.order-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 14px 28px; border-radius: 12px; border: none;
+  background: var(--gold); color: #111; font-family: 'Playfair Display', serif;
+  font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; text-decoration: none;
+}
+.order-btn:hover { filter: brightness(1.1); }
+
+/* Disclaimer Section */
+.disclaimer-section {
+  margin-top: 32px; padding: 20px 24px; background: rgba(201, 168, 76, 0.08);
+  border-radius: 16px; border: 1px solid rgba(201, 168, 76, 0.2);
+  display: flex; gap: 16px; align-items: flex-start;
+}
+.disclaimer-icon { font-size: 24px; flex-shrink: 0; }
+.disclaimer-text { font-size: 13px; color: var(--text2); line-height: 1.7; }
+.disclaimer-text p { margin: 0 0 12px 0; }
+.disclaimer-text p:last-of-type { margin-bottom: 16px; }
+.disclaimer-text strong { color: var(--text); }
+.whatsapp-link, .website-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px; border-radius: 10px;
+  background: var(--gold); color: #111; font-size: 13px; font-weight: 600;
+  text-decoration: none; transition: all .2s;
+}
+.whatsapp-link:hover, .website-link:hover { filter: brightness(1.1); }
+.whatsapp-link svg { flex-shrink: 0; }
+
+/* API Modal */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.7); backdrop-filter: blur(4px);
+  display: none; align-items: center; justify-content: center; z-index: 200;
+}
+.modal-overlay.visible { display: flex; }
+.modal-box {
+  background: var(--surface); border-radius: 20px; padding: 32px; width: 90%; max-width: 440px;
+  border: 1px solid var(--border);
+}
+.modal-title { font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 8px; }
+.modal-hint { font-size: 12px; color: var(--text3); margin-bottom: 20px; line-height: 1.6; }
+.modal-input {
+  width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border2);
+  background: var(--bg); color: var(--text); font-size: 14px; font-family: 'DM Sans', sans-serif;
+  margin-bottom: 12px; outline: none;
+}
+.modal-input:focus { border-color: var(--gold); }
+.modal-btns { display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px; }
+.modal-btn {
+  padding: 10px 20px; border-radius: 10px; font-family: 'DM Sans', sans-serif;
+  font-size: 13px; cursor: pointer; transition: all .2s;
+}
+.modal-btn.secondary { background: transparent; border: 1px solid var(--border2); color: var(--text2); }
+.modal-btn.primary { background: var(--gold); border: none; color: #111; font-weight: 600; }
+.modal-btn:hover { filter: brightness(1.1); }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .main-wrap { flex-direction: column; height: auto; min-height: 100vh; }
+  .catalog-panel { 
+    width: 100%; 
+    min-width: unset; 
+    max-height: none;
+    height: auto;
+    border-right: none; 
+    border-bottom: 1px solid var(--border); 
+  }
+  .catalog-header { padding: 16px; }
+  .catalog-title { font-size: 18px; }
+  .category-list { padding: 12px; gap: 8px; }
+  .category-btn { padding: 14px 12px; }
+  .catalog-grid { 
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 12px;
+    max-height: 50vh;
+    overflow-y: auto;
+  }
+  .model-card { width: 100%; min-height: 180px; }
+  .model-img-wrap { height: 120px; min-height: 120px; }
+  .model-info { padding: 8px 10px; }
+  .model-name { font-size: 11px; }
+  .model-tag { font-size: 7px; padding: 2px 5px; }
+  
+  .simulator-panel { 
+    flex: none;
+    height: auto;
+    overflow: visible;
+    padding-bottom: 100px;
+  }
+  .sim-content { padding: 16px; }
+  .product-title { font-size: 20px; }
+  .product-subtitle { font-size: 12px; }
+  
+  /* Mobile back button */
+  .mobile-back-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    margin-bottom: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .mobile-back-btn:hover { background: var(--border); }
+  
+  .option-group { margin-bottom: 20px; }
+  .option-label { font-size: 11px; margin-bottom: 10px; }
+  
+  .heel-row { gap: 6px; flex-wrap: wrap; }
+  .heel-btn { min-width: 60px; padding: 8px 6px; }
+  .heel-btn .label { font-size: 11px; }
+  .heel-btn .sub { font-size: 9px; }
+  
+  .chip-row { gap: 6px; }
+  .chip { font-size: 11px; padding: 8px 12px; }
+  
+  .swatch-row { gap: 6px; }
+  .swatch { width: 32px; height: 32px; }
+  
+  .occasion-row { gap: 8px; flex-wrap: wrap; }
+  .occ-card { min-width: calc(50% - 4px); padding: 12px 8px; }
+  .occ-card .emoji { font-size: 20px; }
+  .occ-card .label { font-size: 11px; }
+  
+  .gen-btn { padding: 14px 24px; font-size: 14px; }
+  
+  .results-grid { grid-template-columns: 1fr; gap: 16px; }
+  .result-card { padding: 12px; }
+  .result-img { height: 250px; }
+  
+  .order-box { padding: 16px; margin-top: 20px; }
+  .order-btn { padding: 14px 20px; font-size: 13px; }
+  
+  .header { padding: 12px 16px; }
+  .header .logo-wrap img { height: 32px; }
+}
+
+@media (max-width: 480px) {
+  .catalog-grid { 
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .model-card { min-height: 160px; }
+  .model-img-wrap { height: 100px; min-height: 100px; }
+  .model-name { font-size: 10px; }
+  
+  .heel-row { justify-content: center; }
+  .heel-btn { min-width: 55px; }
+  
+  .chip { font-size: 10px; padding: 6px 10px; }
+  .swatch { width: 28px; height: 28px; }
+  
+  .occ-card { min-width: calc(50% - 4px); }
+  
+  .product-title { font-size: 18px; }
+  .result-img { height: 200px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="logo-wrap">
+    <img src="https://cdn.shopify.com/s/files/1/0531/9678/3793/files/Logo_Ginissima-09.svg?v=1684933230" alt="Ginissima" style="height: 40px;">
+    <span style="font-family: 'Playfair Display', serif; font-size: 16px; color: var(--text2); margin-left: 12px; font-style: italic;">Shoe Designer</span>
+  </div>
+  <div class="header-right">
+    <span id="api-status" class="api-status">✓ API Ready</span>
+    <button class="api-btn" onclick="showApiModal()" style="display:none;" id="api-btn-toggle">🔑 API Key</button>
+  </div>
+</header>
+
+<!-- Main -->
+<div class="main-wrap">
+  <!-- Left: Catalog -->
+  <div class="catalog-panel">
+    <div class="catalog-header">
+      <div class="catalog-title">Categorii</div>
+      <div class="catalog-subtitle">Alege o categorie de pantofi</div>
+    </div>
+    <div class="category-list" id="category-list">
+      <button class="category-btn" data-category="Pantofi cu toc" onclick="selectCategory('Pantofi cu toc')">
+        <span class="cat-icon">👠</span>
+        <span class="cat-label">Pantofi cu toc</span>
+        <span class="cat-count" id="count-pantofi-cu-toc"></span>
+      </button>
+      <button class="category-btn" data-category="Pantofi fara toc" onclick="selectCategory('Pantofi fara toc')">
+        <span class="cat-icon">🥿</span>
+        <span class="cat-label">Pantofi fără toc</span>
+        <span class="cat-count" id="count-pantofi-fara-toc"></span>
+      </button>
+      <button class="category-btn" data-category="Cizme & Ghete" onclick="selectCategory('Cizme & Ghete')">
+        <span class="cat-icon">👢</span>
+        <span class="cat-label">Cizme & Ghete</span>
+        <span class="cat-count" id="count-cizme-ghete"></span>
+      </button>
+      <button class="category-btn" data-category="Nunta & Eveniment" onclick="selectCategory('Nunta & Eveniment')">
+        <span class="cat-icon">💒</span>
+        <span class="cat-label">Nuntă & Eveniment</span>
+        <span class="cat-count" id="count-nunta"></span>
+      </button>
+    </div>
+    <div class="product-list-section" id="product-list-section" style="display:none;">
+      <div class="product-list-header">
+        <button class="back-btn" onclick="showCategories()">← Înapoi</button>
+        <span class="current-category" id="current-category"></span>
+      </div>
+      <input type="text" class="catalog-search" id="catalog-search" placeholder="Caută modele...">
+      <div class="catalog-grid" id="catalog-grid">
+        <div class="catalog-loading">Se încarcă...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Simulator -->
+  <div class="simulator-panel">
+    <div class="simulator-content" id="simulator-content">
+      <!-- Empty state (before selection) -->
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">👠</div>
+        <div class="empty-title">Alege un Model</div>
+        <div class="empty-hint">Selectează o categorie din stânga și alege un model pentru a începe să-ți personalizezi pantofii.</div>
+      </div>
+
+      <!-- Simulator UI (after selection) -->
+      <div id="simulator-ui" style="display:none;">
+        <!-- Mobile back button -->
+        <button class="mobile-back-btn" onclick="scrollToCatalog()">← Înapoi la Catalog</button>
+        
+        <div class="sim-header">
+          <div class="sim-model-name" id="sim-model-name">Model Name</div>
+          <div class="sim-model-hint">Personalizează-ți designul mai jos</div>
+        </div>
+
+        <!-- Mode Toggle -->
+        <div class="mode-toggle-section">
+          <div class="mode-toggle">
+            <button class="mode-btn active" id="mode-preview" onclick="setMode('preview')">
+              <span class="mode-icon">👁️</span>
+              <span class="mode-text">Vreau doar să văd cum arată pe mine</span>
+            </button>
+            <button class="mode-btn" id="mode-customize" onclick="setMode('customize')">
+              <span class="mode-icon">✨</span>
+              <span class="mode-text">Vreau să personalizez designul</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Customization Options (hidden in preview mode) -->
+        <div class="customization-options" id="customization-options" style="display:none;">
+          <!-- Heel -->
+          <div class="sim-section" id="heel-section">
+            <div class="sim-label">Înălțimi de toc disponibile</div>
+            <div class="heel-row" id="heel-row"></div>
+          </div>
+
+          <!-- Material -->
+          <div class="sim-section" id="material-section">
+            <div class="sim-label">Materiale disponibile</div>
+            <div class="chip-row" id="material-row"></div>
+          </div>
+
+          <!-- Color -->
+          <div class="sim-section" id="color-section">
+            <div class="sim-label">Culori disponibile</div>
+            <div class="swatch-row" id="color-row"></div>
+            <div class="color-label" id="color-label"></div>
+          </div>
+        </div>
+
+        <!-- Occasion (always visible) -->
+        <div class="sim-section">
+          <div class="sim-label">Cum să porți în funcție de ocazie</div>
+          <div class="occ-row" id="occasion-row"></div>
+        </div>
+
+        <!-- Generate -->
+        <div class="gen-section">
+          <button class="gen-btn" id="gen-btn" disabled onclick="generateAll()">✦  Vizualizează</button>
+          <div class="gen-hint" id="gen-hint">Selectează ocazia</div>
+        </div>
+
+        <div class="error-box" id="error-box"></div>
+
+        <!-- Results -->
+        <div class="results-section" id="results-section">
+          <div class="results-grid">
+            <div class="result-card" id="product-result-card">
+              <div class="result-header">
+                <div class="title"><span>👟</span> Simulare Vizuală Produs</div>
+                <button class="regen-btn" id="product-regen" style="display:none;" onclick="generateOne('product')">↻ Refă</button>
+              </div>
+              <div class="result-img-wrap" id="product-img-wrap">
+                <div class="result-empty"><span class="icon">👟</span><span class="text">În așteptare</span></div>
+              </div>
+            </div>
+            <div class="result-card">
+              <div class="result-header">
+                <div class="title"><span>👩</span> Cum va arăta pe tine</div>
+                <button class="regen-btn" id="model-regen" style="display:none;" onclick="generateOne('model')">↻ Refă</button>
+              </div>
+              <div class="result-img-wrap" id="model-img-wrap">
+                <div class="result-empty"><span class="icon">👩</span><span class="text">În așteptare</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="results-footnote" style="margin-top: 12px; font-size: 12px; color: var(--text3); text-align: center; font-style: italic;">
+            * Dacă imaginea generată nu corespunde cu designul dorit, apasă butonul „Refă" pentru a genera o nouă variantă.
+          </div>
+        </div>
+
+        <!-- Order CTA -->
+        <div class="order-section" id="order-section">
+          <div class="order-title">Îți place designul?</div>
+          <div class="order-content" style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
+            <div class="order-summary" id="order-summary"></div>
+            <div class="order-info" style="flex: 1; min-width: 200px; font-size: 13px; color: var(--text3); line-height: 1.5;">
+              Comandă-l online în orice altă versiune și colegele noastre te vor contacta când primesc comanda ta pentru personalizare în altă culoare, material sau toc.
+            </div>
+          </div>
+          <a class="order-btn" id="order-btn" href="#" target="_blank">
+            Mergi la Pagina Produsului →
+          </a>
+        </div>
+
+        <!-- Disclaimers -->
+        <div class="disclaimer-section">
+          <div class="disclaimer-icon">ℹ️</div>
+          <div class="disclaimer-text">
+            <p><strong>Notă:</strong> Modelul final este generat de inteligența artificială și ar putea exista mici diferențe între această imagine și produsul final, dar generează o imagine foarte apropiată de ceea ce putem realiza pe comandă în atelierul nostru.</p>
+            <p>Dacă nu ați reușit să realizați aici un produs cum vă este necesar, vă rugăm să continuați discuția pe WhatsApp pe site-ul nostru.</p>
+            <a href="https://www.ginissima.ro" target="_blank" class="website-link">
+              Mergi la ginissima.ro →
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- API Key Modal -->
+<div class="modal-overlay" id="api-modal">
+  <div class="modal-box">
+    <div class="modal-title">Gemini API Key</div>
+    <div class="modal-hint">Load your API key from a text file (recommended) or paste it directly. Your key stays in your browser only.</div>
+    
+    <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+      <button class="modal-btn secondary" style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="document.getElementById('key-file').click()">
+        📄 Load from .txt file
+      </button>
+      <input type="file" id="key-file" accept=".txt,.env,.key" style="display:none">
+    </div>
+    
+    <div style="text-align:center; color:#555; font-size:11px; margin-bottom:12px;">— or paste manually —</div>
+    
+    <input type="password" class="modal-input" id="api-key-input" placeholder="Paste API key here...">
+    <div class="modal-btns">
+      <button class="modal-btn secondary" onclick="hideApiModal()">Cancel</button>
+      <button class="modal-btn primary" onclick="saveApiKey()">Save Key</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// CONFIG — Replace this URL with your published Google Sheet CSV
+// ══════════════════════════════════════════════════════════════
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpfLOz6RyKNvmjtFIPz8H2P6I472_gT41yBIkrHbm1c9iP5EPAhN2EuYYGO5TYiXWQ-TGxdlBTZ8K1/pub?gid=2019604232&single=true&output=csv';
+
+// Full product catalog - 96 products from Ginissima
+const SAMPLE_PRODUCTS = [
+  // ═══════════════════════════════════════════════════════════
+  // PANTOFI CU TOC (24 products)
+  // ═══════════════════════════════════════════════════════════
+  { category: 'Pantofi cu toc', model_id: 'alice-silicon', name: 'Pantofi Alice Silicon Editie Limitata', image_url: 'https://ginissima.ro/cdn/shop/products/7-_2.jpg?v=1612624584&width=533', heels: '8cm,9.5cm,11cm', colors: 'transparent', materials: 'silicon', shopify_url: 'https://ginissima.ro/collections/pantofi/products/pantofi-cu-toc-alice-silicon-editie-limitata' },
+  { category: 'Pantofi cu toc', model_id: 'thea-satin-fucsia', name: 'Sandale Thea Satin Fucsia', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06051.jpg?v=1696510318&width=533', heels: '8cm,9.5cm', colors: 'fucsia,negru,rosu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-thea-satin-plum' },
+  { category: 'Pantofi cu toc', model_id: 'cleo-satin-nude-auriu', name: 'Sandale Cleo Satin Varf Ascutit Nude-Auriu', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06693.jpg?v=1686828209&width=533', heels: '8cm,9.5cm', colors: 'nude-auriu,alb,gri-argintiu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-cleo-satin-varf-ascutit-nude-auriu' },
+  { category: 'Pantofi cu toc', model_id: 'thea-lac-nude', name: 'Sandale Thea Piele Lacuita Nude', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06685.jpg?v=1686815221&width=533', heels: '8cm,9.5cm', colors: 'nude,rosu,negru', materials: 'piele lacuita', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-thea-nude' },
+  { category: 'Pantofi cu toc', model_id: 'daisy-aurii', name: 'Sandale Daisy Piele Naturala Varf Ascutit Aurii', image_url: 'https://ginissima.ro/cdn/shop/files/DSC01872.jpg?v=1712837110&width=533', heels: '8cm,9.5cm', colors: 'auriu,argintiu,alb', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-daisy-gold-varf-ascutit' },
+  { category: 'Pantofi cu toc', model_id: 'cleo-satin-alb', name: 'Sandale Cleo Satin Varf Ascutit Alb', image_url: 'https://ginissima.ro/cdn/shop/files/DSC05988_829a0b62-26b3-4f5a-958b-ecefab2582a7.jpg?v=1736944189&width=533', heels: '8cm,9.5cm', colors: 'alb,nude,nude-auriu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-cleo-satin-varf-ascutit-alb' },
+  { category: 'Pantofi cu toc', model_id: 'daisy-negru-alb', name: 'Sandale Daisy Satin Varf Ascutit Negru/Alb', image_url: 'https://ginissima.ro/cdn/shop/products/DD1B0864.jpg?v=1656076510&width=533', heels: '8cm,9.5cm', colors: 'negru-alb,negru,rosu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-daisy-varf-ascutit-negru-alb' },
+  { category: 'Pantofi cu toc', model_id: 'thea-auriu-cracke', name: 'Sandale Thea Piele Naturala Auriu Cracke', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06656.jpg?v=1686815703&width=533', heels: '8cm,9.5cm', colors: 'auriu,argintiu,nude', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-thea-piele-naturala-auriu-cracke' },
+  { category: 'Pantofi cu toc', model_id: 'seline-argintii', name: 'Sandale Seline Piele Naturala Argintii', image_url: 'https://ginissima.ro/cdn/shop/products/IMG_2601-Recovered.jpg?v=1649771545&width=533', heels: '8cm,9.5cm', colors: 'argintiu,auriu,negru', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-seline-piele-naturala-argintii' },
+  { category: 'Pantofi cu toc', model_id: 'alice-lac-negri', name: 'Pantofi Alice Piele Lacuita Negri', image_url: 'https://ginissima.ro/cdn/shop/products/CLARA01.jpg?v=1612873656&width=533', heels: '8cm,9.5cm,11cm', colors: 'negru,rosu,nude', materials: 'piele lacuita', shopify_url: 'https://ginissima.ro/collections/pantofi/products/pantofi-cu-toc-alice-lac-negri' },
+  { category: 'Pantofi cu toc', model_id: 'samantha-funda-negru-alb', name: 'Pantofi Samantha cu Funda Piele Intoarsa Negru/Alb', image_url: 'https://ginissima.ro/cdn/shop/products/DD1B7918.jpg?v=1610722293&width=533', heels: '8cm,9.5cm', colors: 'negru-alb,negru,rosu', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/pantofi/products/pantofi-cu-toc-samantha-cu-funda-negru-alb' },
+  { category: 'Pantofi cu toc', model_id: 'daisy-argintii-rotund', name: 'Sandale Daisy Piele Naturala Varf Rotund Argintii', image_url: 'https://ginissima.ro/cdn/shop/products/DSC01431.jpg?v=1681287523&width=533', heels: '8cm,9.5cm', colors: 'argintiu,auriu,alb', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-daisy-varf-rotund-argintii' },
+  { category: 'Pantofi cu toc', model_id: 'thea-satin-negre', name: 'Sandale Thea Satin Negre', image_url: 'https://ginissima.ro/cdn/shop/products/12a_1_7fda36af-78df-48f9-bd2b-b0e779008a1d.jpg?v=1654002769&width=533', heels: '8cm,9.5cm', colors: 'negru,fucsia,rosu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-thea-satin-negre' },
+  { category: 'Pantofi cu toc', model_id: 'cleo-satin-albe-rotund', name: 'Sandale Cleo Satin Varf Rotund Albe', image_url: 'https://ginissima.ro/cdn/shop/products/450.jpg?v=1669029270&width=533', heels: '8cm,9.5cm', colors: 'alb,nude,negru', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-cleo-alb' },
+  { category: 'Pantofi cu toc', model_id: 'samantha-funda-negri', name: 'Pantofi Samantha cu Funda Piele Intoarsa Negri', image_url: 'https://ginissima.ro/cdn/shop/products/DD1B8477.jpg?v=1610722280&width=533', heels: '8cm,9.5cm,11cm', colors: 'negru,rosu,nude', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/pantofi/products/pantofi-cu-toc-samantha-cu-funda-negri' },
+  { category: 'Pantofi cu toc', model_id: 'thea-lac-rosii', name: 'Sandale Thea Piele Lacuita Rosii', image_url: 'https://ginissima.ro/cdn/shop/products/DD1B4716.jpg?v=1621091138&width=533', heels: '8cm,9.5cm', colors: 'rosu,negru,nude', materials: 'piele lacuita', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-thea-piele-naturala-rosii' },
+  { category: 'Pantofi cu toc', model_id: 'ana-satin-albi', name: 'Pantofi Ana Satin Albi', image_url: 'https://ginissima.ro/cdn/shop/products/1q_68.jpg?v=1612997631&width=533', heels: '8cm,9.5cm', colors: 'alb,nude,nude-auriu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi/products/pantofi-cu-toc-ana-albi' },
+  { category: 'Pantofi cu toc', model_id: 'samantha-v-negri', name: 'Pantofi Samantha in V Piele Intoarsa Negri', image_url: 'https://ginissima.ro/cdn/shop/products/IMG_2518.jpg?v=1647008398&width=533', heels: '8cm,9.5cm,11cm', colors: 'negru,nude,rosu', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/pantofi/products/pantofi-cu-toc-samantha-in-v-negri' },
+  { category: 'Pantofi cu toc', model_id: 'alice-stiletto-lac-negru', name: 'Pantofi Alice Stiletto Piele Lacuita Negri', image_url: 'https://ginissima.ro/cdn/shop/products/3_2.jpg?v=1610722125&width=533', heels: '9.5cm,11cm', colors: 'negru,rosu,nude', materials: 'piele lacuita', shopify_url: 'https://ginissima.ro/collections/pantofi/products/pantofi-cu-toc-alice-stiletto-lac-negru' },
+  { category: 'Pantofi cu toc', model_id: 'samantha-funda-rosii', name: 'Pantofi Samantha cu Funda Piele Intoarsa Rosii', image_url: 'https://ginissima.ro/cdn/shop/products/16.jpg?v=1610722265&width=533', heels: '8cm,9.5cm,11cm', colors: 'rosu,negru,nude', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/pantofi/products/pantofi-cu-toc-samantha-cu-funda-rosii' },
+  { category: 'Pantofi cu toc', model_id: 'alice-stiletto-bej-nude', name: 'Pantofi Alice Stiletto Piele Naturala Bej Nude', image_url: 'https://ginissima.ro/cdn/shop/products/8_2.jpg?v=1610722154&width=533', heels: '9.5cm,11cm', colors: 'nude,negru,rosu', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi/products/pantofi-cu-toc-alice-stiletto-bej-nude' },
+  { category: 'Pantofi cu toc', model_id: 'daisy-albe', name: 'Sandale Daisy Piele Naturala Varf Ascutit Albe', image_url: 'https://ginissima.ro/cdn/shop/products/DSC07415.jpg?v=1678447905&width=533', heels: '8cm,9.5cm', colors: 'alb,auriu,argintiu', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-daisy-white-varf-ascutit' },
+  { category: 'Pantofi cu toc', model_id: 'alice-stiletto-nude', name: 'Pantofi Alice Stiletto Piele Intoarsa Nude', image_url: 'https://ginissima.ro/cdn/shop/products/90.jpg?v=1667909114&width=533', heels: '9.5cm,11cm', colors: 'nude,negru,rosu', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/pantofi/products/pantofi-cu-toc-alice-stiletto-nude-2' },
+  { category: 'Pantofi cu toc', model_id: 'anya-satin-negre', name: 'Sandale Anya Satin Negre', image_url: 'https://ginissima.ro/cdn/shop/products/DD1B1221.jpg?v=1621880095&width=533', heels: '8cm,9.5cm', colors: 'negru,alb,nude', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi/products/sandale-anya-negre' },
+
+  // ═══════════════════════════════════════════════════════════
+  // PANTOFI FARA TOC (24 products)
+  // ═══════════════════════════════════════════════════════════
+  { category: 'Pantofi fara toc', model_id: 'daisy-aurii-rotund-flat', name: 'Sandale Daisy Piele Naturala Varf Rotund Aurii', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06731.jpg?v=1686835415&width=533', heels: 'flat', colors: 'auriu,argintiu,alb', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/sandale-daisy-piele-naturala-varf-rotund-aurii' },
+  { category: 'Pantofi fara toc', model_id: 'adele-satin-negri', name: 'Papuci Adele Satin Negri', image_url: 'https://ginissima.ro/cdn/shop/products/DD1B9565.jpg?v=1618414238&width=533', heels: 'flat', colors: 'negru,rosu,multicolor', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/papuci-adele-negri' },
+  { category: 'Pantofi fara toc', model_id: 'balerini-alice-nude-negru', name: 'Balerini Alice Piele Naturala Nude-Negru', image_url: 'https://ginissima.ro/cdn/shop/files/DSC07786.jpg?v=1713362567&width=533', heels: 'flat', colors: 'nude-negru,negru,maro', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/balerini-alice-piele-naturala-nude-negru' },
+  { category: 'Pantofi fara toc', model_id: 'daisy-argintii-rotund-flat', name: 'Sandale Daisy Piele Naturala Varf Rotund Argintii', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06739.jpg?v=1686835263&width=533', heels: 'flat', colors: 'argintiu,auriu,alb', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/sandale-daisy-piele-naturala-varf-rotund-argintii' },
+  { category: 'Pantofi fara toc', model_id: 'balerini-alice-negri', name: 'Balerini Alice Piele Intoarsa Negri', image_url: 'https://ginissima.ro/cdn/shop/products/264.jpg?v=1669042371&width=533', heels: 'flat', colors: 'negru,gri,maro', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/balerini-alice-negri' },
+  { category: 'Pantofi fara toc', model_id: 'adele-multicolor', name: 'Papuci Adele Satin Multicolor', image_url: 'https://ginissima.ro/cdn/shop/products/9-_5_56abcd8c-96ca-4962-a90a-17fe547b45f2.jpg?v=1628530993&width=533', heels: 'flat', colors: 'multicolor,negru,rosu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/papuci-adele-rosii' },
+  { category: 'Pantofi fara toc', model_id: 'emily-auriu-rose', name: 'Papuci Emily Piele Naturala Auriu-Rose', image_url: 'https://ginissima.ro/cdn/shop/files/DSC08946.jpg?v=1689683848&width=533', heels: 'flat', colors: 'auriu-rose,auriu,argintiu', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/papuci-emily-piele-naturala-auriu-rose' },
+  { category: 'Pantofi fara toc', model_id: 'balerini-alice-v-camel', name: 'Balerini Alice in V Piele Intoarsa Camel', image_url: 'https://ginissima.ro/cdn/shop/files/DSC07737.jpg?v=1709125740&width=533', heels: 'flat', colors: 'camel,negru,maro', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/balerini-alice-in-v-piele-intoarsa-camel' },
+  { category: 'Pantofi fara toc', model_id: 'seline-aurii-flat', name: 'Sandale Seline Piele Naturala Aurii', image_url: 'https://ginissima.ro/cdn/shop/files/DSC08917.jpg?v=1689681152&width=533', heels: 'flat', colors: 'auriu,argintiu,alb', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/sandale-seline-piele-naturala-aurii' },
+  { category: 'Pantofi fara toc', model_id: 'balerini-ana-satin-nude', name: 'Balerini Ana Satin Nude', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06746.jpg?v=1686834776&width=533', heels: 'flat', colors: 'nude,alb,negru', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/balerini-ana-satin-nude' },
+  { category: 'Pantofi fara toc', model_id: 'vesa-satin-negri', name: 'Papuci Vesa Satin Negri', image_url: 'https://ginissima.ro/cdn/shop/products/10_3.jpg?v=1612631057&width=533', heels: 'flat', colors: 'negru,rosu,animal print', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/papuci-vesa' },
+  { category: 'Pantofi fara toc', model_id: 'sofia-negri', name: 'Papuci Sofia Piele Naturala Negri', image_url: 'https://ginissima.ro/cdn/shop/products/DD1B9560.jpg?v=1621161217&width=533', heels: 'flat', colors: 'negru,maro,nude', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/papuci-sofia-negri' },
+  { category: 'Pantofi fara toc', model_id: 'balerini-alice-gri', name: 'Balerini Alice Piele Intoarsa Gri', image_url: 'https://ginissima.ro/cdn/shop/products/314.jpg?v=1669042597&width=533', heels: 'flat', colors: 'gri,negru,maro', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/balerini-alice-gri' },
+  { category: 'Pantofi fara toc', model_id: 'vesa-animal-print', name: 'Papuci Vesa Satin Animal Print', image_url: 'https://ginissima.ro/cdn/shop/products/8-_2.jpg?v=1612622481&width=533', heels: 'flat', colors: 'animal print,negru,rosu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/papuci-vesa-satin-animal-print' },
+  { category: 'Pantofi fara toc', model_id: 'balerini-alice-v-albi', name: 'Balerini Alice in V Piele Naturala Albi', image_url: 'https://ginissima.ro/cdn/shop/files/DSC07763.jpg?v=1709125411&width=533', heels: 'flat', colors: 'alb,nude,negru', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/balerini-alice-in-v-piele-naturala-alb' },
+  { category: 'Pantofi fara toc', model_id: 'balerini-alice-v-fucsia', name: 'Balerini Alice in V Piele Intoarsa Fucsia', image_url: 'https://ginissima.ro/cdn/shop/products/DSC08383.jpg?v=1678375328&width=533', heels: 'flat', colors: 'fucsia,rosu,roz', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/balerini-alice-in-v-fucsia' },
+  { category: 'Pantofi fara toc', model_id: 'balerini-alice-nude', name: 'Balerini Alice Piele Naturala Nude', image_url: 'https://ginissima.ro/cdn/shop/files/DSC05994.jpg?v=1696254086&width=533', heels: 'flat', colors: 'nude,alb,negru', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/sandale-balerini-alice-piele-naturala-nude' },
+  { category: 'Pantofi fara toc', model_id: 'balerini-alice-portocalii', name: 'Balerini Alice Piele Naturala Decupati Lateral Portocalii', image_url: 'https://ginissima.ro/cdn/shop/products/20_7e600488-7af1-40cf-8b4b-b555d734259c.jpg?v=1667988421&width=533', heels: 'flat', colors: 'portocaliu,rosu,fucsia', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/balerini-alice-decupati-lateral-portocalii' },
+  { category: 'Pantofi fara toc', model_id: 'vesa-rosii', name: 'Papuci Vesa Satin Rosii', image_url: 'https://ginissima.ro/cdn/shop/products/9-_2.jpg?v=1612623076&width=533', heels: 'flat', colors: 'rosu,negru,fucsia', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/papuci-vesa-satin-rosii' },
+  { category: 'Pantofi fara toc', model_id: 'balerini-samantha-burgundy', name: 'Balerini Samantha Piele Intoarsa Burgundy', image_url: 'https://ginissima.ro/cdn/shop/files/DSC08136.jpg?v=1727176698&width=533', heels: 'flat', colors: 'burgundy,negru,rosu', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/balerini-samantha-piele-intoarsa-burgundy' },
+  { category: 'Pantofi fara toc', model_id: 'balerini-alice-maro', name: 'Balerini Alice Piele Naturala Maro', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06004.jpg?v=1696253657&width=533', heels: 'flat', colors: 'maro,negru,camel', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/balerini-alice-piele-naturala-maro' },
+  { category: 'Pantofi fara toc', model_id: 'cleo-mov-flat', name: 'Papuci Cleo Satin Mov', image_url: 'https://ginissima.ro/cdn/shop/files/DSC08912.jpg?v=1689684316&width=533', heels: 'flat', colors: 'mov,fucsia,roz', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/papuci-cleo-satin-mov' },
+  { category: 'Pantofi fara toc', model_id: 'balerini-samantha-funda-rosii', name: 'Balerini Samantha cu Funda Piele Intoarsa Rosii', image_url: 'https://ginissima.ro/cdn/shop/files/DSC07752.jpg?v=1713363153&width=533', heels: 'flat', colors: 'rosu,negru,burgundy', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/balerini-samantha-cu-funda-piele-intoarsa-rosii' },
+  { category: 'Pantofi fara toc', model_id: 'balerini-samantha-kaki', name: 'Balerini Samantha Piele Intoarsa Kaki', image_url: 'https://ginissima.ro/cdn/shop/files/DSC05999.jpg?v=1696255188&width=533', heels: 'flat', colors: 'kaki,maro,negru', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/pantofi-fara-toc/products/balerini-samantha-piele-intoarsa-kaki' },
+
+  // ═══════════════════════════════════════════════════════════
+  // CIZME & GHETE (24 products)
+  // ═══════════════════════════════════════════════════════════
+  { category: 'Cizme & Ghete', model_id: 'botine-mia-elastica-negre', name: 'Botine Mia din Piele Elastica Negre', image_url: 'https://ginissima.ro/cdn/shop/products/8a_5_75d081df-7ecb-46e6-a0b1-859d52b146a1.jpg?v=1634909066&width=533', heels: '6cm,8cm', colors: 'negru,maro,burgundy', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/botine-mia-din-piele-elastica-negru' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-mia-peste-genunchi', name: 'Cizme Mia din Piele Elastica Peste Genunchi Negre', image_url: 'https://ginissima.ro/cdn/shop/products/7a_1.jpg?v=1634908041&width=533', heels: '6cm,8cm', colors: 'negru,maro', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-mia-peste-genunchi-negre' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-crete-eva30-negre', name: 'Cizme Crete Piele Naturala Eva 30 Negre', image_url: 'https://ginissima.ro/cdn/shop/products/4a_1_1b356017-80a3-4c7c-bfab-809716797736.jpg?v=1634824177&width=533', heels: '6cm,8cm', colors: 'negru,caramel,alb-murdar', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-crete-eva-30-negre' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-milana-negre', name: 'Cizme Lungi Milana Piele Naturala Negre', image_url: 'https://ginissima.ro/cdn/shop/products/DSC09876.jpg?v=1610722381&width=533', heels: '6cm,8cm', colors: 'negru,burgundy,maron', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-lungi-milana-negre' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-peste-genunchi-negre', name: 'Cizme peste genunchi Piele Intoarsa Negre', image_url: 'https://ginissima.ro/cdn/shop/products/DSC09893.jpg?v=1610722429&width=533', heels: '6cm,8cm', colors: 'negru,maron,gri', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-peste-genunchi-negre' },
+  { category: 'Cizme & Ghete', model_id: 'botine-mia-intoarsa-negre', name: 'Botine Mia din Piele Intoarsa Elastica Negre', image_url: 'https://ginissima.ro/cdn/shop/products/DD1B2163.jpg?v=1637064121&width=533', heels: '6cm,8cm', colors: 'negru,maro,burgundy', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/cizme/products/botine-mia-din-piele-intoarsa-elastica-negre' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-gloria-negre', name: 'Cizme Gloria Piele Intoarsa Sub Genunchi Negre', image_url: 'https://ginissima.ro/cdn/shop/files/DSC07811.jpg?v=1700748194&width=533', heels: '6cm,8cm', colors: 'negru,maro,gri', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-gloria-piele-intoarsa-sub-genunchi-negre' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-milana-burgundy', name: 'Cizme Lungi Milana Piele Naturala Burgundy', image_url: 'https://ginissima.ro/cdn/shop/files/DSC02470.jpg?v=1729074138&width=533', heels: '6cm,8cm', colors: 'burgundy,negru,maron', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-lungi-milana-piele-naturala-burgundy' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-milla-negre', name: 'Cizme Milla Piele Naturala Sub Genunchi Negre', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06026.jpg?v=1696941407&width=533', heels: '6cm,8cm', colors: 'negru,alb-murdar,maron-caramel,gri', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-milla-piele-naturala-sub-genunchi-negre' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-crete-eva30-caramel', name: 'Cizme Crete Piele Naturala Eva 30 Caramel', image_url: 'https://ginissima.ro/cdn/shop/products/2a_2_8bec34f4-0dbe-4b11-974c-0b281f870123.jpg?v=1634823013&width=533', heels: '6cm,8cm', colors: 'caramel,negru,alb-murdar', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-crete-eva-30-caramel' },
+  { category: 'Cizme & Ghete', model_id: 'botine-mia-intoarsa-maro', name: 'Botine Mia din Piele Intoarsa Elastica Maro', image_url: 'https://ginissima.ro/cdn/shop/products/DSC06407.jpg?v=1671621035&width=533', heels: '6cm,8cm', colors: 'maro,negru,burgundy', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/cizme/products/botine-mia-din-piele-intoarsa-elastica-maron' },
+  { category: 'Cizme & Ghete', model_id: 'botine-mia-burgundy', name: 'Botine Mia din Piele Intoarsa Elastica Burgundy', image_url: 'https://ginissima.ro/cdn/shop/files/DSC02496.jpg?v=1729073104&width=533', heels: '6cm,8cm', colors: 'burgundy,negru,maro', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/cizme/products/botine-mia-din-piele-intoarsa-elastica-burgundy-editie-limitata' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-gloria-maro', name: 'Cizme Gloria Piele Intoarsa Sub Genunchi Maro', image_url: 'https://ginissima.ro/cdn/shop/files/DSC08929.jpg?v=1702475522&width=533', heels: '6cm,8cm', colors: 'maro,negru,gri', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-gloria-piele-intoarsa-sub-genunchi-maro' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-milla-embosata-negre', name: 'Cizme Milla Piele Embosata Sub Genunchi Negre', image_url: 'https://ginissima.ro/cdn/shop/files/DSC02502.jpg?v=1728547507&width=533', heels: '6cm,8cm', colors: 'negru,maro', materials: 'piele embosata', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-ilona-piele-embosata-sub-genunchi-negre' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-norra-negre', name: 'Cizme Norra Piele Naturala Sub Genunchi Negre', image_url: 'https://ginissima.ro/cdn/shop/files/DSC02885.jpg?v=1707832256&width=533', heels: 'flat', colors: 'negru,maro', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-norra-piele-neagra' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-milana-maron', name: 'Cizme Lungi Milana Piele Intoarsa Maron', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06073.jpg?v=1696944451&width=533', heels: '6cm,8cm', colors: 'maron,negru,gri', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-lungi-milana-piele-intoarsa-maron' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-milla-alb-murdar', name: 'Cizme Milla Piele Naturala Sub Genunchi Alb-Murdar', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06045.jpg?v=1696941689&width=533', heels: '6cm,8cm', colors: 'alb-murdar,negru,gri', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-milla-piele-naturala-sub-genunchi-alb-unt' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-medeea-negre', name: 'Cizme Medeea Piele Naturala Peste Genunchi Negre', image_url: 'https://ginissima.ro/cdn/shop/files/DSC02890.jpg?v=1707833209&width=533', heels: '6cm,8cm', colors: 'negru,maron', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-medeea-peste-genunchi-piele-naturala-neagra' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-crete-eva40-maron', name: 'Cizme Crete Piele Naturala Eva 40 Maron Metalizat', image_url: 'https://ginissima.ro/cdn/shop/products/c_9.jpg?v=1635778697&width=533', heels: '6cm,8cm', colors: 'maron,negru,caramel', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/eva-cizme-crete-metalice-40-maron-metalizat' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-crete-eva30-alb', name: 'Cizme Crete Piele Naturala Eva 30 Alb-Murdar', image_url: 'https://ginissima.ro/cdn/shop/products/DD1B8882.jpg?v=1634823559&width=533', heels: '6cm,8cm', colors: 'alb-murdar,negru,caramel', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-crete-eva-30-alb-unt' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-milla-gri', name: 'Cizme Milla Piele Naturala Sub Genunchi Gri', image_url: 'https://ginissima.ro/cdn/shop/files/DSC02491.jpg?v=1729073842&width=533', heels: '6cm,8cm', colors: 'gri,negru,maron', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-milla-piele-naturala-sub-genunchi-gri-1' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-ilona-maro-inchis', name: 'Cizme Ilona Piele Embosata Sub Genunchi Maro Inchis', image_url: 'https://ginissima.ro/cdn/shop/files/DSC07796.jpg?v=1700130384&width=533', heels: '6cm,8cm', colors: 'maro inchis,negru', materials: 'piele embosata', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-ilona-piele-embosata-sub-genunchi-maron-inchis' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-milla-maron-caramel', name: 'Cizme Milla Piele Naturala Sub Genunchi Maron-Caramel', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06031.jpg?v=1696941939&width=533', heels: '6cm,8cm', colors: 'maron-caramel,negru,gri', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-milla-piele-naturala-sub-genunchi-maron' },
+  { category: 'Cizme & Ghete', model_id: 'cizme-v-negre', name: 'Cizme in V Piele Intoarsa Sub Genunchi Negre', image_url: 'https://ginissima.ro/cdn/shop/products/6a_1_73afda38-354c-47aa-bf5e-a9ea449548e0.jpg?v=1634903502&width=533', heels: '6cm,8cm', colors: 'negru,maron,gri', materials: 'piele intoarsa', shopify_url: 'https://ginissima.ro/collections/cizme/products/cizme-in-v-sub-genunchi-negre' },
+
+  // ═══════════════════════════════════════════════════════════
+  // NUNTA & EVENIMENT (24 products)
+  // ═══════════════════════════════════════════════════════════
+  { category: 'Nunta & Eveniment', model_id: 'alice-silicon-nunta', name: 'Pantofi Alice Silicon Editie Limitata', image_url: 'https://ginissima.ro/cdn/shop/products/7-_2.jpg?v=1612624584&width=533', heels: '8cm,9.5cm,11cm', colors: 'transparent', materials: 'silicon', shopify_url: 'https://ginissima.ro/collections/nunta/products/pantofi-cu-toc-alice-silicon-editie-limitata' },
+  { category: 'Nunta & Eveniment', model_id: 'cleo-nude-auriu-nunta', name: 'Sandale Cleo Satin Varf Ascutit Nude-Auriu', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06693.jpg?v=1686828209&width=533', heels: '8cm,9.5cm', colors: 'nude-auriu,alb,gri-argintiu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-cleo-satin-varf-ascutit-nude-auriu' },
+  { category: 'Nunta & Eveniment', model_id: 'cleo-alb-nunta', name: 'Sandale Cleo Satin Varf Ascutit Alb', image_url: 'https://ginissima.ro/cdn/shop/files/DSC05988_829a0b62-26b3-4f5a-958b-ecefab2582a7.jpg?v=1736944189&width=533', heels: '8cm,9.5cm', colors: 'alb,nude,nude-auriu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-cleo-satin-varf-ascutit-alb' },
+  { category: 'Nunta & Eveniment', model_id: 'thea-auriu-nunta', name: 'Sandale Thea Piele Naturala Auriu Cracke', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06656.jpg?v=1686815703&width=533', heels: '8cm,9.5cm', colors: 'auriu,argintiu,nude', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-thea-piele-naturala-auriu-cracke' },
+  { category: 'Nunta & Eveniment', model_id: 'seline-argintii-nunta', name: 'Sandale Seline Piele Naturala Argintii', image_url: 'https://ginissima.ro/cdn/shop/products/IMG_2601-Recovered.jpg?v=1649771545&width=533', heels: '8cm,9.5cm', colors: 'argintiu,auriu,alb', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-seline-piele-naturala-argintii' },
+  { category: 'Nunta & Eveniment', model_id: 'daisy-argintii-nunta', name: 'Sandale Daisy Piele Naturala Varf Rotund Argintii', image_url: 'https://ginissima.ro/cdn/shop/products/DSC01431.jpg?v=1681287523&width=533', heels: '8cm,9.5cm', colors: 'argintiu,auriu,alb', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-daisy-varf-rotund-argintii' },
+  { category: 'Nunta & Eveniment', model_id: 'cleo-albe-rotund-nunta', name: 'Sandale Cleo Satin Varf Rotund Albe', image_url: 'https://ginissima.ro/cdn/shop/products/450.jpg?v=1669029270&width=533', heels: '8cm,9.5cm', colors: 'alb,nude,gri-argintiu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-cleo-alb' },
+  { category: 'Nunta & Eveniment', model_id: 'ana-albi-nunta', name: 'Pantofi Ana Satin Albi', image_url: 'https://ginissima.ro/cdn/shop/products/1q_68.jpg?v=1612997631&width=533', heels: '8cm,9.5cm', colors: 'alb,nude,nude-auriu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/nunta/products/pantofi-cu-toc-ana-albi' },
+  { category: 'Nunta & Eveniment', model_id: 'daisy-aurii-rotund-nunta', name: 'Sandale Daisy Piele Naturala Varf Rotund Aurii', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06731.jpg?v=1686835415&width=533', heels: 'flat', colors: 'auriu,argintiu,alb', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-daisy-piele-naturala-varf-rotund-aurii' },
+  { category: 'Nunta & Eveniment', model_id: 'daisy-albe-nunta', name: 'Sandale Daisy Piele Naturala Varf Ascutit Albe', image_url: 'https://ginissima.ro/cdn/shop/products/DSC07415.jpg?v=1678447905&width=533', heels: '8cm,9.5cm', colors: 'alb,auriu,argintiu', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-daisy-white-varf-ascutit' },
+  { category: 'Nunta & Eveniment', model_id: 'cleo-gri-argintiu-nunta', name: 'Sandale Cleo Satin Varf Ascutit Gri-Argintiu', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06670.jpg?v=1686829046&width=533', heels: '8cm,9.5cm', colors: 'gri-argintiu,alb,nude', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-cleo-satin-varf-ascutit-gri-argintiu' },
+  { category: 'Nunta & Eveniment', model_id: 'alice-satin-nisip-nunta', name: 'Pantofi Alice Satin Nisip', image_url: 'https://ginissima.ro/cdn/shop/products/13A_1_8c242996-d30f-43d7-800b-f02953f7c519.jpg?v=1656507408&width=533', heels: '8cm,9.5cm', colors: 'nisip,alb,nude', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/nunta/products/pantofi-cu-toc-alice-satin' },
+  { category: 'Nunta & Eveniment', model_id: 'gaia-nude-rose-nunta', name: 'Sandale Gaia Piele Naturala Nude Rose', image_url: 'https://ginissima.ro/cdn/shop/products/DSC01470.jpg?v=1681287231&width=533', heels: '8cm,9.5cm', colors: 'nude rose,alb,auriu', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-gaia-piele-naturala-nude-rose' },
+  { category: 'Nunta & Eveniment', model_id: 'thea-albe-nunta', name: 'Sandale Thea Piele Naturala Albe', image_url: 'https://ginissima.ro/cdn/shop/products/DSC01439.jpg?v=1681286722&width=533', heels: '8cm,9.5cm', colors: 'alb,nude,auriu', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-thea-white' },
+  { category: 'Nunta & Eveniment', model_id: 'cleo-nude-rotund-nunta', name: 'Sandale Cleo Satin Varf Rotund Nude', image_url: 'https://ginissima.ro/cdn/shop/products/DSC08259.jpg?v=1678369545&width=533', heels: '8cm,9.5cm', colors: 'nude,alb,gri-argintiu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-cleo-nude' },
+  { category: 'Nunta & Eveniment', model_id: 'francesca-aurii-nunta', name: 'Sandale Francesca Piele Naturala Aurii', image_url: 'https://ginissima.ro/cdn/shop/products/DSC01449.jpg?v=1681286214&width=533', heels: '8cm,9.5cm', colors: 'auriu,argintiu,alb', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-francesca-aurii' },
+  { category: 'Nunta & Eveniment', model_id: 'bianca-platforma-albe-nunta', name: 'Sandale Bianca cu Platforma Piele Naturala Albe', image_url: 'https://ginissima.ro/cdn/shop/products/DD1B1565.jpg?v=1651229940&width=533', heels: '8cm,9.5cm', colors: 'alb,nude,auriu', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-bianca-cu-platforma-albe' },
+  { category: 'Nunta & Eveniment', model_id: 'ana-nude-auriu-nunta', name: 'Pantofi Ana Satin Nude-Auriu', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06700.jpg?v=1686815978&width=533', heels: '8cm,9.5cm', colors: 'nude-auriu,alb,nude', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/nunta/products/pantofi-ana-satin-nude-auriu' },
+  { category: 'Nunta & Eveniment', model_id: 'samantha-v-nude-nunta', name: 'Pantofi Samantha in V Piele Lacuita Nude', image_url: 'https://ginissima.ro/cdn/shop/products/IMG_2544-Recovered.jpg?v=1649249468&width=533', heels: '8cm,9.5cm', colors: 'nude,alb,negru', materials: 'piele lacuita', shopify_url: 'https://ginissima.ro/collections/nunta/products/pantofi-cu-toc-samantha-in-v-nude' },
+  { category: 'Nunta & Eveniment', model_id: 'samantha-iii-albi-nunta', name: 'Pantofi Samantha III Piele Sidefata Albi', image_url: 'https://ginissima.ro/cdn/shop/products/DD1B0091.jpg?v=1656424305&width=533', heels: '8cm,9.5cm', colors: 'alb,nude,argintiu', materials: 'piele sidefata', shopify_url: 'https://ginissima.ro/collections/nunta/products/pantofi-cu-toc-samantha-iii-albi' },
+  { category: 'Nunta & Eveniment', model_id: 'daisy-argintii-flat-nunta', name: 'Sandale Daisy Piele Naturala Varf Rotund Argintii', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06739.jpg?v=1686835263&width=533', heels: 'flat', colors: 'argintiu,auriu,alb', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-daisy-piele-naturala-varf-rotund-argintii' },
+  { category: 'Nunta & Eveniment', model_id: 'rose-platforma-alb-negru-nunta', name: 'Sandale Rose cu Platforma Piele Naturala Alb/Negru', image_url: 'https://ginissima.ro/cdn/shop/products/IMG_2673-Recovered.jpg?v=1649684799&width=533', heels: '8cm,9.5cm', colors: 'alb-negru,alb,negru', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-rose-albe-cu-platforma-piele-naturala' },
+  { category: 'Nunta & Eveniment', model_id: 'balerini-ana-nude-nunta', name: 'Balerini Ana Satin Nude', image_url: 'https://ginissima.ro/cdn/shop/files/DSC06746.jpg?v=1686834776&width=533', heels: 'flat', colors: 'nude,alb,auriu', materials: 'satin', shopify_url: 'https://ginissima.ro/collections/nunta/products/balerini-ana-satin-nude' },
+  { category: 'Nunta & Eveniment', model_id: 'daisy-argintii-ascutit-nunta', name: 'Sandale Daisy Piele Naturala Varf Ascutit Argintii', image_url: 'https://ginissima.ro/cdn/shop/files/DSC02459.jpg?v=1728478746&width=533', heels: '8cm,9.5cm', colors: 'argintiu,auriu,alb', materials: 'piele naturala', shopify_url: 'https://ginissima.ro/collections/nunta/products/sandale-daisy-piele-naturala-varf-ascutit-argintii' },
+];
+
+// ══════════════════════════════════════════════════════════════
+// REFERENCE DATA — Matches Ginissima's product options
+// ══════════════════════════════════════════════════════════════
+const HEELS = [
+  { id:'flat', label:'Plat', height:'0–2 cm', visual:'completely flat sole with no heel piece at all' },
+  { id:'6cm', label:'6 cm', height:'6 cm', visual:'an elegant slim heel approximately 6 cm tall - if original has a heel, keep similar style; if original is flat, use a slim elegant stiletto-style heel' },
+  { id:'6.5cm', label:'6.5 cm', height:'6.5 cm', visual:'an elegant slim heel approximately 6.5 cm tall - if original has a heel, keep similar style; if original is flat, use a slim elegant stiletto-style heel' },
+  { id:'8cm', label:'8 cm', height:'8 cm', visual:'an elegant slim heel approximately 8 cm tall - if original has a heel, keep similar style; if original is flat, use a slim elegant stiletto-style heel' },
+  { id:'9.5cm', label:'9.5 cm', height:'9.5 cm', visual:'an elegant slim stiletto heel approximately 9.5 cm tall - slim and refined, NOT chunky or block heel' },
+  { id:'10cm', label:'10 cm', height:'10 cm', visual:'a high elegant stiletto heel approximately 10 cm tall - slim and refined, NOT chunky or block heel' },
+  { id:'11cm', label:'11 cm', height:'11 cm', visual:'a very high slim stiletto heel approximately 11 cm tall - elegant and slender, NOT chunky or block heel' },
+  { id:'14cm', label:'14 cm', height:'14 cm', visual:'an extreme high slim stiletto heel approximately 14 cm tall - very slender and elegant' },
+];
+const MATERIALS = [
+  { id:'piele naturala', label:'Piele Naturală', texture:'smooth polished natural leather with subtle grain' },
+  { id:'piele intoarsa', label:'Piele Întoarsă', texture:'soft brushed suede leather with velvety nap' },
+  { id:'satin', label:'Satin', texture:'luxurious satin fabric with soft elegant sheen' },
+  { id:'catifea', label:'Catifea', texture:'rich velvet with deep pile texture' },
+  { id:'piele lacuita', label:'Lac (Patent)', texture:'high-gloss patent leather with mirror-like shine' },
+  { id:'plasa', label:'Plasă', texture:'delicate mesh fabric with subtle transparency' },
+  { id:'piele embosata', label:'Piele Embosată', texture:'embossed leather with textured pattern' },
+  { id:'piele sidefata', label:'Piele Sidefată', texture:'pearlescent iridescent leather with subtle shimmer' },
+  { id:'piele elastica', label:'Piele Elastică', texture:'stretchy elastic leather that hugs the foot snugly' },
+  { id:'piele cracke', label:'Piele Cracke', texture:'crackled metallic leather with textured crinkled surface, showing fine irregular cracks that catch the light' },
+  { id:'silicon', label:'Silicon', texture:'transparent flexible silicon material' },
+];
+const COLORS = [
+  // === REDS ===
+  { id:'rosu', label:'Roșu', hex:'#E63939', desc:'Bright cherry red - Ferrari red, vibrant, high saturation' },
+  { id:'rosu-intens', label:'Roșu Intens', hex:'#CC0000', desc:'Deep intense red - darker, richer red' },
+  { id:'rosu-deschis', label:'Roșu Deschis', hex:'#FF6B6B', desc:'Light red - soft, lighter red' },
+  { id:'rosu-inchis', label:'Roșu Închis', hex:'#8B0000', desc:'Dark red - deep blood red' },
+  { id:'burgundy', label:'Burgundy', hex:'#6B1C2A', desc:'Rich burgundy wine - dark red with purple undertone' },
+  { id:'bordeaux', label:'Bordeaux', hex:'#7B1E3B', desc:'Deep bordeaux - similar to burgundy, slightly brighter' },
+  { id:'plum', label:'Plum', hex:'#8E4585', desc:'Plum purple-red - red with strong purple' },
+  { id:'visiniu', label:'Vișiniu', hex:'#9B111E', desc:'Cherry wine - deep cherry red' },
+  { id:'coral-rosu', label:'Coral Roșu', hex:'#E55B3C', desc:'Red coral - red with orange hint' },
+  // === ORANGES ===
+  { id:'portocaliu', label:'Portocaliu', hex:'#E24C3A', desc:'Ginissima red-orange - tomato red, coral with red undertone' },
+  { id:'portocaliu-deschis', label:'Portocaliu Deschis', hex:'#FF9966', desc:'Light orange - soft peachy orange' },
+  { id:'portocaliu-intens', label:'Portocaliu Intens', hex:'#FF5500', desc:'Intense orange - bright vivid orange' },
+  { id:'piersica', label:'Piersică', hex:'#FFCBA4', desc:'Peach - soft peachy orange' },
+  { id:'coral', label:'Coral', hex:'#FF7F50', desc:'Coral - classic coral orange' },
+  { id:'caramiziu', label:'Cărămiziu', hex:'#B7410E', desc:'Brick/terracotta - earthy orange-brown' },
+  { id:'paprika', label:'Paprika', hex:'#8B2500', desc:'Paprika - dark burnt orange' },
+  { id:'mandarina', label:'Mandarină', hex:'#FF8C00', desc:'Tangerine - bright orange' },
+  // === PINKS ===
+  { id:'roz', label:'Roz', hex:'#DE9B9B', desc:'Soft blush pink - dusty rose' },
+  { id:'roz-deschis', label:'Roz Deschis', hex:'#FFB6C1', desc:'Light pink - baby pink' },
+  { id:'roz-intens', label:'Roz Intens', hex:'#FF69B4', desc:'Hot pink - bright intense pink' },
+  { id:'roz-nude', label:'Roz-Nude', hex:'#DCB8A4', desc:'Nude pink - pink with beige undertone' },
+  { id:'roz-piersica', label:'Roz-Piersică', hex:'#FFDAB9', desc:'Peachy pink - light peach' },
+  { id:'roz-pal', label:'Roz Pal', hex:'#FADADD', desc:'Pale pink - very soft pink' },
+  { id:'roz-prafuit', label:'Roz Prăfuit', hex:'#DCAE96', desc:'Dusty pink - muted mauve pink' },
+  { id:'rose', label:'Rose', hex:'#E8A0A0', desc:'Rose pink - medium pink' },
+  { id:'fucsia', label:'Fucsia', hex:'#FF1493', desc:'Vibrant fuchsia - hot pink, magenta' },
+  { id:'magenta', label:'Magenta', hex:'#FF00FF', desc:'Magenta - vivid pink-purple' },
+  { id:'roz-negru', label:'Roz-Negru', hex:'#8B4557', desc:'Dusty rose dark - mauve with dark undertone' },
+  { id:'roz-vechi', label:'Roz Vechi', hex:'#C08081', desc:'Old rose - vintage muted pink' },
+  { id:'salmon', label:'Salmon', hex:'#FA8072', desc:'Salmon pink - orange-pink' },
+  { id:'bubblegum', label:'Bubblegum', hex:'#FF77A9', desc:'Bubblegum pink - candy pink' },
+  // === BROWNS ===
+  { id:'maro', label:'Maro', hex:'#8B4513', desc:'Rich brown - classic saddle brown' },
+  { id:'maro-deschis', label:'Maro Deschis', hex:'#A0785A', desc:'Light brown - tan brown' },
+  { id:'maron', label:'Maron', hex:'#5D4037', desc:'Dark brown - chocolate brown' },
+  { id:'maro inchis', label:'Maro Închis', hex:'#3E2723', desc:'Very dark brown - almost black-brown' },
+  { id:'maro-caramel', label:'Maro-Caramel', hex:'#A67B5B', desc:'Brown caramel - warm medium brown' },
+  { id:'maron-caramel', label:'Maron-Caramel', hex:'#8B6914', desc:'Dark caramel brown' },
+  { id:'maro-ciocolatiu', label:'Maro-Ciocolatiu', hex:'#7B3F00', desc:'Chocolate brown - rich chocolate' },
+  { id:'ciocolata', label:'Ciocolată', hex:'#3D1C02', desc:'Dark chocolate - very dark chocolate' },
+  { id:'camel', label:'Camel', hex:'#C19A6B', desc:'Camel tan - light warm brown' },
+  { id:'caramel', label:'Caramel', hex:'#A67B5B', desc:'Caramel - golden brown' },
+  { id:'mocha mousse', label:'Mocha Mousse', hex:'#967259', desc:'Mocha - soft brown with grey' },
+  { id:'cafea', label:'Cafea', hex:'#6F4E37', desc:'Coffee - medium coffee brown' },
+  { id:'coniac', label:'Coniac', hex:'#9A463D', desc:'Cognac - reddish brown' },
+  { id:'tabac', label:'Tabac', hex:'#71543E', desc:'Tobacco - warm medium brown' },
+  { id:'nisip', label:'Nisip', hex:'#C2B280', desc:'Sand - light sandy brown' },
+  { id:'taupe', label:'Taupe', hex:'#483C32', desc:'Taupe - grey-brown' },
+  // === NUDES ===
+  { id:'nude', label:'Nude', hex:'#D4A984', desc:'Warm nude - classic nude beige' },
+  { id:'nude-deschis', label:'Nude Deschis', hex:'#E8D4BC', desc:'Light nude - very light nude' },
+  { id:'nude-inchis', label:'Nude Închis', hex:'#A68B6A', desc:'Dark nude - deeper nude tone' },
+  { id:'nude-auriu', label:'Nude-Auriu', hex:'#D4B896', desc:'Golden nude - nude with gold shimmer' },
+  { id:'nude-negru', label:'Nude-Negru', hex:'#8B7355', desc:'Dark nude - nude with dark undertone' },
+  { id:'nude-roz', label:'Nude-Roz', hex:'#E6C7C2', desc:'Pink nude - nude with pink undertone' },
+  { id:'bej', label:'Bej', hex:'#D2B48C', desc:'Classic beige - tan beige' },
+  { id:'bej-deschis', label:'Bej Deschis', hex:'#E8DCC8', desc:'Light beige - cream beige' },
+  { id:'bej-inchis', label:'Bej Închis', hex:'#A89070', desc:'Dark beige - deep beige' },
+  { id:'grej', label:'Grej', hex:'#B8A590', desc:'Grey-beige - taupe' },
+  { id:'sampanie', label:'Șampanie', hex:'#F7E7CE', desc:'Champagne - light golden beige' },
+  // === WHITES ===
+  { id:'alb', label:'Alb', hex:'#F5F0EB', desc:'Pristine white - clean white' },
+  { id:'alb-murdar', label:'Alb-Murdar', hex:'#F5F5DC', desc:'Off-white cream - ivory' },
+  { id:'off-white', label:'Off-White', hex:'#FAF0E6', desc:'Off-white - linen white' },
+  { id:'alb-unt', label:'Alb-Unt', hex:'#FFFDD0', desc:'Butter white - warm cream' },
+  { id:'alb-lapte', label:'Alb-Lapte', hex:'#FEFEFA', desc:'Milk white - soft white' },
+  { id:'ivory', label:'Ivory', hex:'#FFFFF0', desc:'Ivory - classic ivory' },
+  { id:'crem', label:'Crem', hex:'#FFFDD0', desc:'Cream - warm cream' },
+  { id:'vanilla', label:'Vanilla', hex:'#F3E5AB', desc:'Vanilla cream - soft yellow-cream' },
+  { id:'vanilla haze', label:'Vanilla Haze', hex:'#F5E6C8', desc:'Vanilla haze - muted vanilla' },
+  { id:'ecru', label:'Ecru', hex:'#C2B280', desc:'Ecru - unbleached linen' },
+  // === GREYS ===
+  { id:'gri', label:'Gri', hex:'#6B7280', desc:'Medium grey - sophisticated grey' },
+  { id:'gri deschis', label:'Gri Deschis', hex:'#9CA3AF', desc:'Light grey - silver grey' },
+  { id:'gri inchis', label:'Gri Închis', hex:'#4B5563', desc:'Dark grey - charcoal' },
+  { id:'gri-argintiu', label:'Gri-Argintiu', hex:'#9CA3AF', desc:'Silver grey - metallic grey' },
+  { id:'gri-liliac', label:'Gri-Liliac', hex:'#B8A9C9', desc:'Grey lilac - grey with purple' },
+  { id:'gri-olive', label:'Gri-Olive', hex:'#808069', desc:'Grey olive - grey with green' },
+  { id:'gri-albastru', label:'Gri-Albastru', hex:'#6C7B8B', desc:'Blue grey - grey with blue' },
+  { id:'gri-cald', label:'Gri Cald', hex:'#8B8378', desc:'Warm grey - grey with brown' },
+  { id:'gri-rece', label:'Gri Rece', hex:'#708090', desc:'Cool grey - blue-tinted grey' },
+  { id:'carbune', label:'Cărbune', hex:'#36454F', desc:'Charcoal - very dark grey' },
+  { id:'cenusiu', label:'Cenușiu', hex:'#A9A9A9', desc:'Ash grey - medium grey' },
+  { id:'antracit', label:'Antracit', hex:'#293133', desc:'Anthracite - very dark grey' },
+  // === BLACKS ===
+  { id:'negru', label:'Negru', hex:'#1A1A1A', desc:'Jet black - pure black' },
+  { id:'negru-mat', label:'Negru Mat', hex:'#0A0A0A', desc:'Matte black - non-shiny black' },
+  { id:'negru-lucios', label:'Negru Lucios', hex:'#1C1C1C', desc:'Glossy black - shiny black' },
+  // === YELLOWS ===
+  { id:'galben', label:'Galben', hex:'#FFD700', desc:'Yellow - classic yellow' },
+  { id:'galben pal', label:'Galben Pal', hex:'#FFFACD', desc:'Pale yellow - very light yellow' },
+  { id:'galben-pai', label:'Galben-Pai', hex:'#F5DEB3', desc:'Straw yellow - wheat color' },
+  { id:'galben-mustar', label:'Galben-Muștar', hex:'#FFDB58', desc:'Mustard yellow - golden yellow' },
+  { id:'galben-lime', label:'Galben-Lime', hex:'#BFFF00', desc:'Lime yellow - bright yellow-green' },
+  { id:'galben-intens', label:'Galben Intens', hex:'#FFCC00', desc:'Intense yellow - bright yellow' },
+  { id:'galben-auriu', label:'Galben-Auriu', hex:'#FFD700', desc:'Golden yellow - gold-like yellow' },
+  { id:'neon', label:'Neon', hex:'#CCFF00', desc:'Neon - bright fluorescent' },
+  { id:'lamaie', label:'Lămâie', hex:'#FFF44F', desc:'Lemon - bright lemon yellow' },
+  { id:'sofran', label:'Șofran', hex:'#F4C430', desc:'Saffron - warm deep yellow' },
+  // === GREENS ===
+  { id:'verde', label:'Verde', hex:'#228B22', desc:'Forest green - classic green' },
+  { id:'verde-deschis', label:'Verde Deschis', hex:'#90EE90', desc:'Light green - soft green' },
+  { id:'verde smarald', label:'Verde Smarald', hex:'#1A6B4A', desc:'Emerald green - jewel green' },
+  { id:'verde forest', label:'Verde Forest', hex:'#228B22', desc:'Forest green - deep green' },
+  { id:'verde inchis', label:'Verde Închis', hex:'#006400', desc:'Dark green - very dark green' },
+  { id:'verde-menta', label:'Verde-Mentă', hex:'#98FF98', desc:'Mint green - fresh light green' },
+  { id:'verde-mint', label:'Verde-Mint', hex:'#98FF98', desc:'Mint green - same as menta' },
+  { id:'verde-salvie', label:'Verde-Salvie', hex:'#9DC183', desc:'Sage green - muted green' },
+  { id:'verde-masliniu', label:'Verde-Măsliniu', hex:'#556B2F', desc:'Olive green - dark olive' },
+  { id:'verde-padure', label:'Verde-Pădure', hex:'#013220', desc:'Deep forest - very dark green' },
+  { id:'verde-lime', label:'Verde-Lime', hex:'#32CD32', desc:'Lime green - bright lime' },
+  { id:'verde-neon', label:'Verde-Neon', hex:'#39FF14', desc:'Neon green - fluorescent green' },
+  { id:'kaki', label:'Kaki', hex:'#6B8E23', desc:'Khaki olive - olive green' },
+  { id:'teal', label:'Teal', hex:'#008080', desc:'Teal - blue-green' },
+  { id:'smarald', label:'Smarald', hex:'#50C878', desc:'Emerald - bright emerald' },
+  // === BLUES ===
+  { id:'albastru', label:'Albastru', hex:'#0066CC', desc:'Classic blue - true blue' },
+  { id:'albastru-deschis', label:'Albastru Deschis', hex:'#ADD8E6', desc:'Light blue - soft blue' },
+  { id:'blue', label:'Blue', hex:'#4169E1', desc:'Royal blue - bright blue' },
+  { id:'albastru electric', label:'Albastru Electric', hex:'#007FFF', desc:'Electric blue - bright vivid blue' },
+  { id:'albastru-celest', label:'Albastru-Celest', hex:'#87CEEB', desc:'Sky blue - light celestial blue' },
+  { id:'albastru-petrol', label:'Albastru-Petrol', hex:'#004953', desc:'Petrol blue - dark teal' },
+  { id:'albastru-royal', label:'Albastru-Royal', hex:'#4169E1', desc:'Royal blue - classic royal' },
+  { id:'albastru-cobalt', label:'Albastru-Cobalt', hex:'#0047AB', desc:'Cobalt blue - deep vivid blue' },
+  { id:'albastru-praf', label:'Albastru-Praf', hex:'#B0C4DE', desc:'Dusty blue - muted light blue' },
+  { id:'bleumarin', label:'Bleumarin', hex:'#000080', desc:'Navy blue - dark navy' },
+  { id:'indigo', label:'Indigo', hex:'#4B0082', desc:'Indigo - deep blue-purple' },
+  { id:'turcoaz', label:'Turcoaz', hex:'#40E0D0', desc:'Turquoise - bright teal' },
+  { id:'turcoaz-inchis', label:'Turcoaz Închis', hex:'#00CED1', desc:'Dark turquoise' },
+  { id:'aqua', label:'Aqua', hex:'#5F9EA0', desc:'Aqua - blue-green' },
+  { id:'azur', label:'Azur', hex:'#007FFF', desc:'Azure - bright sky blue' },
+  { id:'denim', label:'Denim', hex:'#1560BD', desc:'Denim blue - jeans blue' },
+  { id:'blue jeans', label:'Blue Jeans', hex:'#5DADE2', desc:'Light denim - faded jeans' },
+  // === PURPLES ===
+  { id:'mov', label:'Mov', hex:'#7B68EE', desc:'Purple - medium purple' },
+  { id:'mov-deschis', label:'Mov Deschis', hex:'#DDA0DD', desc:'Light purple - soft purple' },
+  { id:'mov-inchis', label:'Mov Închis', hex:'#4B0082', desc:'Dark purple - deep purple' },
+  { id:'lila', label:'Lila', hex:'#9B7BB8', desc:'Lilac - soft purple' },
+  { id:'mov-lavanda', label:'Mov-Lavandă', hex:'#E6E6FA', desc:'Lavender - very light purple' },
+  { id:'mov metalizat', label:'Mov Metalizat', hex:'#9370DB', desc:'Metallic purple - shimmery purple' },
+  { id:'violet', label:'Violet', hex:'#8B00FF', desc:'Violet - vivid purple' },
+  { id:'ametist', label:'Ametist', hex:'#9966CC', desc:'Amethyst - gem purple' },
+  { id:'pruna', label:'Prună', hex:'#701C1C', desc:'Plum - dark red-purple' },
+  { id:'orchidee', label:'Orhidee', hex:'#DA70D6', desc:'Orchid - pink-purple' },
+  { id:'mauve', label:'Mauve', hex:'#E0B0FF', desc:'Mauve - pale purple-pink' },
+  // === METALLICS ===
+  { id:'auriu', label:'Auriu', hex:'#C9A84C', desc:'Gold - classic metallic gold' },
+  { id:'auriu-deschis', label:'Auriu Deschis', hex:'#FFD700', desc:'Light gold - bright gold' },
+  { id:'auriu-inchis', label:'Auriu Închis', hex:'#B8860B', desc:'Dark gold - antique gold' },
+  { id:'auriu-rose', label:'Auriu-Rose', hex:'#B76E79', desc:'Rose gold - pink gold' },
+  { id:'auriu-negru', label:'Auriu-Negru', hex:'#8B7500', desc:'Antique gold - dark gold' },
+  { id:'auriu-sampanie', label:'Auriu-Șampanie', hex:'#D4AF37', desc:'Champagne gold - soft gold' },
+  { id:'argintiu', label:'Argintiu', hex:'#A8A9AD', desc:'Silver - brushed silver' },
+  { id:'argintiu-deschis', label:'Argintiu Deschis', hex:'#D3D3D3', desc:'Light silver - bright silver' },
+  { id:'argintiu-oglinda', label:'Argintiu-Oglindă', hex:'#C0C0C0', desc:'Mirror silver - highly reflective' },
+  { id:'argintiu-negru', label:'Argintiu-Negru', hex:'#71797E', desc:'Gunmetal - dark silver' },
+  { id:'bronz', label:'Bronz', hex:'#CD7F32', desc:'Bronze - copper-brown metallic' },
+  { id:'cupru', label:'Cupru', hex:'#B87333', desc:'Copper - reddish metallic' },
+  { id:'pewter', label:'Pewter', hex:'#8A9597', desc:'Pewter - grey metallic' },
+  { id:'chrome', label:'Chrome', hex:'#DBE4EB', desc:'Chrome - bright silver' },
+  // === SPECIAL ===
+  { id:'transparent', label:'Transparent', hex:'rgba(200,200,200,0.3)', desc:'Clear transparent - see-through' },
+  { id:'animal print', label:'Animal Print', hex:'#D2A679', desc:'Leopard/animal pattern' },
+  { id:'snake print', label:'Snake Print', hex:'#8B8378', desc:'Snake/python pattern' },
+  { id:'croco', label:'Croco', hex:'#5D4037', desc:'Crocodile pattern' },
+  { id:'multicolor', label:'Multicolor', hex:'#FF69B4', desc:'Multiple colors' },
+  { id:'holografic', label:'Holografic', hex:'#E0B0FF', desc:'Holographic - iridescent rainbow' },
+  { id:'glitter', label:'Glitter', hex:'#FFD700', desc:'Glitter - sparkly finish' },
+];
+const OCCASIONS = [
+  { id:'nunta', label:'Nuntă', icon:'💒', scene:'an elegant luxury wedding venue with floral arrangements and romantic lighting', outfit:'an elegant floor-length bridal or formal gown' },
+  { id:'cocktail', label:'Cocktail', icon:'🍸', scene:'a sophisticated upscale cocktail lounge in Bucharest', outfit:'a chic knee-length cocktail dress' },
+  { id:'gala', label:'Gală', icon:'🎭', scene:'a grand opulent ballroom with crystal chandeliers', outfit:'a stunning floor-length evening gown' },
+  { id:'casual', label:'Casual Chic', icon:'☀️', scene:'a sunny European city street with elegant cafés and cobblestones', outfit:'stylish casual wear, designer jeans and a blazer' },
+  { id:'office', label:'Business', icon:'💼', scene:'a modern sleek corporate office lobby with glass and marble', outfit:'a tailored professional business suit or elegant pencil skirt' },
+  { id:'date', label:'Seară Romantică', icon:'🌹', scene:'an intimate candlelit upscale restaurant with warm ambiance', outfit:'a sophisticated fitted dress' },
+];
+
+// ══════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════
+let products = [];
+let selectedCategory = null;
+let selectedProduct = null;
+let selectedHeel = null;
+let selectedMaterial = null;
+let selectedColor = null;
+let selectedOccasion = null;
+let apiKey = localStorage.getItem('gemini_api_key') || '';
+let apiKeySource = apiKey ? 'saved' : '';
+let loading = { product: false, model: false };
+let lastProductImageB64 = null;
+let productImageB64 = null; // Loaded from selected product
+let currentMode = 'preview'; // 'preview' or 'customize'
+
+// Track if options were auto-selected (single option = treat as "keep original")
+let heelAutoSelected = false;
+let materialAutoSelected = false;
+let colorAutoSelected = false;
+
+// ══════════════════════════════════════════════════════════════
+// MODE SWITCHING
+// ══════════════════════════════════════════════════════════════
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('mode-preview').classList.toggle('active', mode === 'preview');
+  document.getElementById('mode-customize').classList.toggle('active', mode === 'customize');
+  document.getElementById('customization-options').style.display = mode === 'customize' ? 'block' : 'none';
+  
+  // In preview mode, hide product result card (only show model)
+  const productCard = document.getElementById('product-result-card');
+  if (productCard) {
+    productCard.style.display = mode === 'preview' ? 'none' : 'block';
+  }
+  
+  // Reset selections when switching to preview mode
+  if (mode === 'preview') {
+    selectedHeel = null;
+    selectedMaterial = null;
+    selectedColor = null;
+    document.querySelectorAll('.heel-btn, .chip, .swatch').forEach(b => b.classList.remove('active'));
+  }
+  
+  updateGenButton();
+}
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', async () => {
+  // Try to load API key from server (Railway environment variable)
+  await loadApiKeyFromServer();
+  updateApiStatus();
+  await loadProducts();
+  updateCategoryCounts();
+  initSearch();
+  
+  // File input for API key (fallback)
+  document.getElementById('key-file').addEventListener('change', (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      loadApiKeyFromFile(file);
+      e.target.value = ''; // Reset so same file can be loaded again
+    }
+  });
+});
+
+async function loadApiKeyFromServer() {
+  // Cloudflare Worker handles the API key - no need to load it client-side
+  apiKey = 'CLOUDFLARE_WORKER';
+  apiKeySource = 'server';
+  console.log('Using Cloudflare Worker for API calls');
+}
+
+async function loadProducts() {
+  // Try Google Sheets first
+  try {
+    console.log('Fetching from Google Sheets...');
+    const resp = await fetch(SHEET_CSV_URL);
+    if (resp.ok) {
+      const csv = await resp.text();
+      const parsed = parseCSV(csv);
+      if (parsed.length > 0) {
+        products = parsed;
+        console.log(`Loaded ${products.length} products from Google Sheets`);
+        return;
+      }
+    }
+  } catch (err) {
+    console.log('Google Sheets fetch failed:', err);
+  }
+  // Fallback to embedded data
+  products = SAMPLE_PRODUCTS;
+  console.log(`Loaded ${products.length} embedded products (fallback)`);
+}
+
+function parseCSV(csv) {
+  const lines = csv.trim().split('\n');
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/[^a-z_]/g, ''));
+  return lines.slice(1).map(line => {
+    // Handle quoted values with commas inside
+    const values = [];
+    let current = '';
+    let inQuotes = false;
+    for (let char of line) {
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        values.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    values.push(current.trim());
+    
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = (values[i] || '').trim().replace(/^"|"$/g, ''); });
+    return obj;
+  }).filter(p => p.model_id && p.name);
+}
+
+function updateCategoryCounts() {
+  const categories = ['Pantofi cu toc', 'Pantofi fara toc', 'Cizme & Ghete', 'Nunta & Eveniment'];
+  categories.forEach(cat => {
+    const count = products.filter(p => p.category === cat).length;
+    const id = cat.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
+    const el = document.getElementById(`count-${id}`);
+    if (el) el.textContent = count > 0 ? count : '';
+  });
+}
+
+function selectCategory(category) {
+  selectedCategory = category;
+  
+  // Update button states
+  document.querySelectorAll('.category-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.category === category);
+  });
+  
+  // Show product list
+  document.getElementById('category-list').style.display = 'none';
+  document.getElementById('product-list-section').style.display = 'flex';
+  document.getElementById('current-category').textContent = category;
+  
+  // Render products for this category
+  renderCatalog();
+}
+
+function showCategories() {
+  selectedCategory = null;
+  document.getElementById('category-list').style.display = 'flex';
+  document.getElementById('product-list-section').style.display = 'none';
+  document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+}
+
+function renderCatalog(filter = '') {
+  const grid = document.getElementById('catalog-grid');
+  
+  // Filter by category first, then by search
+  let filtered = products;
+  if (selectedCategory) {
+    filtered = filtered.filter(p => p.category === selectedCategory);
+  }
+  if (filter) {
+    filtered = filtered.filter(p =>
+      p.name.toLowerCase().includes(filter.toLowerCase()) ||
+      p.model_id.toLowerCase().includes(filter.toLowerCase())
+    );
+  }
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="catalog-loading">Nu s-au găsit modele</div>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map(p => `
+    <div class="model-card ${selectedProduct?.model_id === p.model_id ? 'selected' : ''}" onclick="selectProduct('${p.model_id}')" style="min-height:200px;">
+      <div class="model-img-wrap" style="height:140px; min-height:140px; display:flex; align-items:center; justify-content:center; background:#f8f8f8;">
+        <img src="${p.image_url}" alt="${p.name}" style="max-width:100%; max-height:100%; object-fit:contain; display:block;">
+      </div>
+      <div class="model-info">
+        <div class="model-name">${p.name}</div>
+        <div class="model-tags">
+          ${(p.heels || '').split(',').filter(Boolean).slice(0,3).map(h => `<span class="model-tag heel">${h.trim()}</span>`).join('')}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function initSearch() {
+  document.getElementById('catalog-search').addEventListener('input', (e) => {
+    renderCatalog(e.target.value);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// PRODUCT SELECTION
+// ══════════════════════════════════════════════════════════════
+async function selectProduct(modelId) {
+  selectedProduct = products.find(p => p.model_id === modelId);
+  if (!selectedProduct) return;
+
+  // Reset selections
+  selectedHeel = null;
+  selectedMaterial = null;
+  selectedColor = null;
+  selectedOccasion = null;
+  lastProductImageB64 = null;
+  productImageB64 = null;
+  
+  // Reset auto-select flags
+  heelAutoSelected = false;
+  materialAutoSelected = false;
+  colorAutoSelected = false;
+
+  // Update catalog UI
+  renderCatalog(document.getElementById('catalog-search').value);
+
+  // Show simulator
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('simulator-ui').style.display = 'block';
+  document.getElementById('sim-model-name').textContent = selectedProduct.name;
+
+  // Build dynamic options
+  buildHeelOptions();
+  buildMaterialOptions();
+  buildColorOptions();
+  buildOccasionOptions();
+
+  // Hide results & order
+  document.getElementById('results-section').classList.remove('visible');
+  document.getElementById('order-section').classList.remove('visible');
+  setResultState('product', 'empty');
+  setResultState('model', 'empty');
+
+  // Load product image as base64
+  await loadProductImage();
+
+  updateGenButton();
+  
+  // Auto-scroll to simulator on mobile (screen width < 900px)
+  if (window.innerWidth < 900) {
+    setTimeout(() => {
+      document.getElementById('simulator-ui').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }
+}
+
+async function loadProductImage() {
+  try {
+    // Request higher resolution from Shopify CDN for better AI analysis
+    const hiResUrl = selectedProduct.image_url.replace(/&width=\d+/, '&width=1200');
+    const resp = await fetch(hiResUrl);
+    const blob = await resp.blob();
+    productImageB64 = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
+  } catch (err) {
+    console.error('Failed to load product image:', err);
+    productImageB64 = null;
+  }
+}
+
+// Scroll back to catalog on mobile
+function scrollToCatalog() {
+  const catalogPanel = document.querySelector('.catalog-panel');
+  if (catalogPanel) {
+    catalogPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// BUILD OPTIONS (filtered by product availability)
+// ══════════════════════════════════════════════════════════════
+function buildHeelOptions() {
+  const available = (selectedProduct.heels || '').split(/[,;]/).map(s => s.trim().toLowerCase()).filter(s => s);
+  const row = document.getElementById('heel-row');
+  const section = document.getElementById('heel-section');
+  const availableHeels = HEELS.filter(h => available.includes(h.id));
+  
+  // If only 1 option, auto-select and hide the section - mark as auto-selected
+  if (availableHeels.length <= 1) {
+    selectedHeel = availableHeels[0] || null;
+    heelAutoSelected = true; // Treat as "keep original"
+    if (section) section.style.display = 'none';
+    row.innerHTML = '';
+    return;
+  }
+  
+  // Multiple options - user must choose
+  heelAutoSelected = false;
+  if (section) section.style.display = '';
+  
+  row.innerHTML = availableHeels.map(h => {
+    const svgH = { 'flat':2, '6cm':10, '6.5cm':12, '8cm':16, '9.5cm':24, '10cm':28, '11cm':32, '14cm':38 }[h.id] || 16;
+    return `
+      <button class="heel-btn" data-id="${h.id}" onclick="selectHeel('${h.id}')">
+        <svg width="40" height="36" viewBox="0 0 40 36" fill="none">
+          <path d="M4,${34-svgH} Q4,${32-svgH} 6,${32-svgH} L26,${32-svgH} Q30,${32-svgH} 31,${34-svgH+2} L34,34 L30,34 L28,${34-svgH+4} L6,${34-svgH+4} Q4,${34-svgH+4} 4,${34-svgH} Z" fill="#555"/>
+          ${svgH > 5 ? `<rect x="31" y="${34-svgH+2}" width="3" height="${svgH-2}" rx="1.5" fill="#555"/>` : ''}
+        </svg>
+        <span class="label">${h.label}</span>
+        <span class="sub">${h.height}</span>
+      </button>`;
+  }).join('');
+}
+
+function buildMaterialOptions() {
+  const available = (selectedProduct.materials || '').split(/[,;]/).map(s => s.trim().toLowerCase()).filter(s => s);
+  const row = document.getElementById('material-row');
+  const section = document.getElementById('material-section');
+  const availableMaterials = MATERIALS.filter(m => available.includes(m.id));
+  
+  // If only 1 option, auto-select and hide the section - mark as auto-selected
+  if (availableMaterials.length <= 1) {
+    selectedMaterial = availableMaterials[0] || null;
+    materialAutoSelected = true; // Treat as "keep original"
+    if (section) section.style.display = 'none';
+    row.innerHTML = '';
+    return;
+  }
+  
+  // Multiple options - user must choose
+  materialAutoSelected = false;
+  if (section) section.style.display = '';
+  
+  row.innerHTML = availableMaterials.map(m => {
+    return `<button class="chip" data-id="${m.id}" onclick="selectMaterial('${m.id}')">${m.label}</button>`;
+  }).join('');
+}
+
+function buildColorOptions() {
+  const available = (selectedProduct.colors || '').split(/[,;]/).map(s => s.trim().toLowerCase()).filter(s => s);
+  const row = document.getElementById('color-row');
+  const section = document.getElementById('color-section');
+  const availableColors = COLORS.filter(c => available.includes(c.id));
+  
+  // If only 1 option, auto-select and hide the section - mark as auto-selected
+  if (availableColors.length <= 1) {
+    selectedColor = availableColors[0] || null;
+    colorAutoSelected = true; // Treat as "keep original"
+    if (section) section.style.display = 'none';
+    row.innerHTML = '';
+    document.getElementById('color-label').textContent = '';
+    return;
+  }
+  
+  // Multiple options - user must choose
+  colorAutoSelected = false;
+  if (section) section.style.display = '';
+  
+  row.innerHTML = availableColors.map(c => {
+    return `<button class="swatch" data-id="${c.id}" style="background:${c.hex}" title="${c.label}" onclick="selectColor('${c.id}')"></button>`;
+  }).join('');
+  document.getElementById('color-label').textContent = '';
+}
+
+function buildOccasionOptions() {
+  const row = document.getElementById('occasion-row');
+  row.innerHTML = OCCASIONS.map(o => `
+    <button class="occ-card" data-id="${o.id}" onclick="selectOccasion('${o.id}')">
+      <span class="emoji">${o.icon}</span>
+      <span class="label">${o.label}</span>
+    </button>
+  `).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+// SELECTION HANDLERS
+// ══════════════════════════════════════════════════════════════
+function selectHeel(id) {
+  selectedHeel = HEELS.find(h => h.id === id);
+  document.querySelectorAll('.heel-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.id === id);
+    const paths = b.querySelectorAll('path, rect');
+    paths.forEach(p => p.setAttribute('fill', b.dataset.id === id ? '#c9a84c' : '#555'));
+  });
+  updateGenButton();
+}
+
+function selectMaterial(id) {
+  selectedMaterial = MATERIALS.find(m => m.id === id);
+  document.querySelectorAll('.chip').forEach(b => b.classList.toggle('active', b.dataset.id === id));
+  updateGenButton();
+}
+
+function selectColor(id) {
+  selectedColor = COLORS.find(c => c.id === id);
+  document.querySelectorAll('.swatch').forEach(b => {
+    b.classList.toggle('active', b.dataset.id === id);
+    b.style.boxShadow = b.dataset.id === id ? `0 0 14px ${selectedColor?.hex || '#888'}66` : 'none';
+  });
+  document.getElementById('color-label').textContent = selectedColor ? `Selectat: ${selectedColor.label}` : '';
+  updateGenButton();
+}
+
+function selectOccasion(id) {
+  selectedOccasion = OCCASIONS.find(o => o.id === id);
+  document.querySelectorAll('.occ-card').forEach(b => b.classList.toggle('active', b.dataset.id === id));
+  updateGenButton();
+}
+
+function updateGenButton() {
+  // In preview mode, only need product and occasion
+  // In customize mode, need all selections
+  let ready;
+  if (currentMode === 'preview') {
+    ready = selectedProduct && productImageB64 && selectedOccasion && apiKey;
+  } else {
+    ready = selectedProduct && productImageB64 && selectedHeel && selectedMaterial && selectedColor && selectedOccasion && apiKey;
+  }
+  
+  const btn = document.getElementById('gen-btn');
+  const hint = document.getElementById('gen-hint');
+  btn.disabled = !ready || loading.product || loading.model;
+  btn.className = ready ? 'gen-btn ready' : 'gen-btn';
+  
+  if (!apiKey) {
+    hint.textContent = 'Se încarcă cheia API...';
+  } else if (currentMode === 'preview' && !selectedOccasion) {
+    hint.textContent = 'Selectează ocazia';
+  } else if (currentMode === 'customize' && (!selectedHeel || !selectedMaterial || !selectedColor || !selectedOccasion)) {
+    hint.textContent = 'Selectează toate opțiunile de mai sus';
+  } else if (!productImageB64) {
+    hint.textContent = 'Se încarcă imaginea produsului...';
+  } else {
+    hint.style.display = 'none';
+  }
+  hint.style.display = ready ? 'none' : '';
+}
+
+// ══════════════════════════════════════════════════════════════
+// API KEY
+// ══════════════════════════════════════════════════════════════
+function showApiModal() {
+  document.getElementById('api-key-input').value = '';
+  document.getElementById('api-modal').classList.add('visible');
+}
+function hideApiModal() {
+  document.getElementById('api-modal').classList.remove('visible');
+}
+function saveApiKey() {
+  const inputKey = document.getElementById('api-key-input').value.trim();
+  if (inputKey) {
+    apiKey = inputKey;
+    apiKeySource = 'manual';
+    localStorage.setItem('gemini_api_key', apiKey);
+    updateApiStatus();
+    hideApiModal();
+    updateGenButton();
+  }
+}
+function loadApiKeyFromFile(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    let key = e.target.result.trim().split('\n')[0];
+    // Handle common formats: GEMINI_API_KEY=xxx, "xxx", etc.
+    key = key.replace(/^(GEMINI_API_KEY|GOOGLE_API_KEY|API_KEY)\s*=\s*/, '').replace(/['"]/g, '').trim();
+    if (key) {
+      apiKey = key;
+      apiKeySource = 'file';
+      localStorage.setItem('gemini_api_key', apiKey);
+      updateApiStatus();
+      hideApiModal();
+      updateGenButton();
+    }
+  };
+  reader.readAsText(file);
+}
+function updateApiStatus() {
+  const status = document.getElementById('api-status');
+  if (apiKey) {
+    status.style.display = '';
+    status.textContent = apiKeySource === 'file' ? '✓ Key loaded from file' : '✓ API Ready';
+  } else {
+    status.style.display = 'none';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// GENERATION
+// ══════════════════════════════════════════════════════════════
+// Gemini image generation (used for model shots — faster than OpenAI)
+// Routes through /api/openai-image with useGemini flag to avoid routing issues
+async function callGeminiImageGen(parts) {
+  const model = 'gemini-3-pro-image-preview';
+  
+  const resp = await fetch('/api/gemini-gen', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      useGemini: true,
+      model: model,
+      contents: [{ role: 'user', parts: parts }],
+      generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
+    }),
+  });
+  
+  if (!resp.ok) throw new Error(`Gemini error: ${resp.status}`);
+  
+  const data = await resp.json();
+  const candidate = data.candidates?.[0];
+  let imgData = null;
+  for (const part of candidate?.content?.parts || []) {
+    if (part.inlineData) imgData = part.inlineData.data;
+  }
+  return imgData;
+}
+
+// GPT-4o Image Edit function
+async function callOpenAIImageEdit(images, prompt, size) {
+  // images can be: array of {b64, mime} OR legacy (b64String, mime not used)
+  const imageArray = Array.isArray(images) ? images : [{ b64: images, mime: 'image/jpeg' }];
+  
+  console.log('Calling OpenAI Responses API...', imageArray.length, 'images');
+  console.log('Prompt:', prompt.substring(0, 200) + '...');
+  
+  const resp = await fetch('/api/openai-image', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      prompt: prompt,
+      images: imageArray,
+      size: size || '1024x1024',
+      quality: 'high',
+      useResponses: true
+    })
+  });
+  
+  if (!resp.ok) {
+    const errText = await resp.text();
+    console.error('OpenAI image edit failed:', resp.status, errText.substring(0, 300));
+    throw new Error(`OpenAI error: ${resp.status}`);
+  }
+  
+  const result = await resp.json();
+  const b64 = result.data?.[0]?.b64_json;
+  if (!b64) {
+    console.error('OpenAI returned no image data:', JSON.stringify(result).substring(0, 300));
+    throw new Error('No image in OpenAI response');
+  }
+  
+  console.log('OpenAI image edit successful, image size:', Math.round(b64.length / 1024), 'KB');
+  return b64;
+}
+
+// ═══ PIXEL-BASED IMAGE VALIDATOR ═══
+// Measures the generated shoe's proportions using canvas analysis.
+// Compares against workshop-calibrated H/W ratios.
+// This replaces Gemini self-validation — objective and reliable.
+
+// Workshop-calibrated target H/W ratios (bounding box height / width)
+const TARGET_HW_RATIOS = {
+  'flat': { target: 0.30, tolerance: 0.08 },
+  '6cm':  { target: 0.47, tolerance: 0.12 },
+  '6.5cm':{ target: 0.50, tolerance: 0.12 },
+  '8cm':  { target: 0.57, tolerance: 0.10 },
+  '9.5cm':{ target: 0.62, tolerance: 0.06 },
+  '10cm': { target: 0.65, tolerance: 0.07 },
+  '11cm': { target: 0.68, tolerance: 0.08 },
+  '14cm': { target: 0.75, tolerance: 0.10 },
+};
+
+function measureShoeHWRatio(imageB64) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const pixels = imageData.data;
+      
+      // Find bounding box of non-background pixels
+      // Background is typically white/off-white (R,G,B all > 220)
+      let minX = canvas.width, maxX = 0, minY = canvas.height, maxY = 0;
+      let hasShoe = false;
+      
+      for (let y = 0; y < canvas.height; y++) {
+        for (let x = 0; x < canvas.width; x++) {
+          const i = (y * canvas.width + x) * 4;
+          const r = pixels[i], g = pixels[i+1], b = pixels[i+2];
+          
+          // Not background if not all channels are very light
+          if (r < 215 || g < 215 || b < 215) {
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+            hasShoe = true;
+          }
+        }
+      }
+      
+      if (!hasShoe) {
+        resolve({ ratio: 0, width: 0, height: 0, valid: false });
+        return;
+      }
+      
+      const shoeWidth = maxX - minX;
+      const shoeHeight = maxY - minY;
+      const ratio = shoeHeight / shoeWidth;
+      
+      console.log(`Shoe measurement: ${shoeWidth}w × ${shoeHeight}h, H/W = ${ratio.toFixed(3)} (${(ratio*100).toFixed(1)}%)`);
+      
+      resolve({ ratio, width: shoeWidth, height: shoeHeight, valid: true });
+    };
+    img.onerror = () => resolve({ ratio: 0, width: 0, height: 0, valid: false });
+    img.src = `data:image/png;base64,${imageB64}`;
+  });
+}
+
+async function validateShapeOnly(generatedImageB64, originalImageB64, originalMime) {
+  try {
+    function detectMimeFromB64(b64) {
+      if (b64.startsWith('/9j/')) return 'image/jpeg';
+      if (b64.startsWith('iVBOR')) return 'image/png';
+      return 'image/jpeg';
+    }
+    const origMime = detectMimeFromB64(originalImageB64);
+    const genMime = detectMimeFromB64(generatedImageB64);
+    
+    console.log('Shape validation: sending to Claude...');
+    
+    const resp = await fetch('/api/anthropic', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 150,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: origMime, data: originalImageB64 } },
+            { type: 'image', source: { type: 'base64', media_type: genMime, data: generatedImageB64 } },
+            { type: 'text', text: `IMAGE 1 is the ORIGINAL shoe. IMAGE 2 is AI-generated with a DIFFERENT heel height (this is intentional).
+
+Check ONLY these — ignore height differences:
+
+1. HEEL TYPE: Stiletto must stay stiletto. Block must stay block. FAIL if type changed.
+2. HEEL THICKNESS: If IMAGE 1 has a thin stiletto (8-12mm), IMAGE 2 must also be thin. FAIL if noticeably thicker/chunkier.
+3. HEEL PROFILE: Straight must stay straight. FAIL if became curved/spool-shaped.
+4. TOE: Open stays open, pointed stays pointed.
+5. BACK: Slingback stays slingback, pump stays pump.
+
+BE STRICT about thickness. A thin stiletto becoming medium-thick or spool is a FAIL.
+
+Respond ONLY: PASS, ACCEPTABLE, or FAIL + brief reason.` }
+          ]
+        }]
+      })
+    });
+    
+    if (!resp.ok) {
+      console.log('Shape validation error:', resp.status);
+      return { passed: true, reason: 'API error, allowing through' };
+    }
+    
+    const data = await resp.json();
+    const text = data.content?.[0]?.text || 'PASS';
+    const upper = text.toUpperCase().trim();
+    const passed = upper.startsWith('PASS') || upper.startsWith('ACCEPTABLE');
+    console.log('Shape validation result:', text);
+    
+    return { passed, reason: passed ? 'shape OK' : `FAIL shape - ${text}` };
+  } catch (err) {
+    console.log('Shape validation error:', err);
+    return { passed: true, reason: 'error, allowing through' };
+  }
+}
+
+async function validateGeneration(generatedImageB64, originalImageB64, originalMime, requirements, heelId, heelRefB64) {
+  // STAGE 1: Pixel-based H/W ratio check (for heel HEIGHT)
+  const measurement = await measureShoeHWRatio(generatedImageB64);
+  
+  if (!measurement.valid) {
+    console.log('Validation: could not measure image');
+    return { passed: true, reason: 'measurement failed, allowing through' };
+  }
+  
+  const targetData = TARGET_HW_RATIOS[heelId];
+  if (targetData) {
+    const { target, tolerance } = targetData;
+    const diff = measurement.ratio - target;
+    const withinTolerance = Math.abs(diff) <= tolerance;
+    const estimatedCm = ((measurement.ratio - 0.30) / 0.030).toFixed(1);
+    
+    console.log(`Stage 1 (pixel): H/W = ${measurement.ratio.toFixed(3)}, target = ${target} ± ${tolerance}, ~${estimatedCm}cm`);
+    
+    if (!withinTolerance) {
+      const direction = diff > 0 ? 'TOO TALL' : 'TOO SHORT';
+      console.log(`  → FAIL - ${direction}`);
+      return { passed: false, reason: `FAIL height - ${direction} (H/W=${measurement.ratio.toFixed(3)}, ~${estimatedCm}cm)` };
+    }
+    console.log(`  → Height OK`);
+  }
+  
+  // STAGE 2: Claude (Anthropic) visual check — independent model for shape/structure validation
+  try {
+    console.log('Stage 2 (Claude shape check)...');
+    
+    // Detect actual image format from base64 data header bytes
+    // Anthropic is strict: mime must match actual image data
+    function detectMimeFromB64(b64) {
+      if (b64.startsWith('/9j/')) return 'image/jpeg';
+      if (b64.startsWith('iVBOR')) return 'image/png';
+      if (b64.startsWith('R0lGO')) return 'image/gif';
+      if (b64.startsWith('UklGR')) return 'image/webp';
+      return 'image/jpeg'; // fallback
+    }
+    
+    const origMimeDetected = detectMimeFromB64(originalImageB64);
+    const genMimeDetected = detectMimeFromB64(generatedImageB64);
+    
+    console.log('Claude request - original mime:', origMimeDetected, '(declared:', originalMime, '), size:', Math.round(originalImageB64.length / 1024), 'KB');
+    console.log('Claude request - generated mime:', genMimeDetected, ', size:', Math.round(generatedImageB64.length / 1024), 'KB');
+    
+    const claudeImages = [
+      { type: 'image', source: { type: 'base64', media_type: origMimeDetected, data: originalImageB64 } },
+      { type: 'image', source: { type: 'base64', media_type: genMimeDetected, data: generatedImageB64 } },
+    ];
+    
+    // Add 6.5cm reference image if available for height comparison
+    let refImageNote = '';
+    if (heelRefB64) {
+      const refMime = heelRefB64.startsWith('/9j/') ? 'image/jpeg' : 'image/png';
+      claudeImages.push({ type: 'image', source: { type: 'base64', media_type: refMime, data: heelRefB64 } });
+      refImageNote = '\n\nIMAGE 3 is a REFERENCE shoe with the correct target heel height. IMAGE 2\'s heel should be approximately the same height as IMAGE 3\'s heel. If IMAGE 2\'s heel is drastically different in height from IMAGE 3, note this.';
+    }
+    
+    claudeImages.push(
+      { type: 'text', text: `IMAGE 1 is the ORIGINAL shoe. IMAGE 2 is AI-generated with a DIFFERENT heel height (intentional — ignore height).${refImageNote}
+
+Check these STRICTLY:
+
+1. HEEL THICKNESS: If IMAGE 1 has a THIN stiletto heel (8-12mm), IMAGE 2 must ALSO have a thin stiletto. FAIL if IMAGE 2's heel is noticeably thicker, chunkier, or wider than IMAGE 1's heel (proportional to length).
+
+2. HEEL PROFILE: Same straight/curved character? FAIL if IMAGE 1 is straight but IMAGE 2 is curved/spool-shaped, or vice versa.
+
+3. HEEL TYPE: Stiletto must stay stiletto. Block must stay block. FAIL if type changed.
+
+4. TOE: Open stays open, pointed stays pointed.
+
+5. BACK: Slingback stays slingback, pump stays pump.
+
+BE STRICT about thickness. A thin stiletto becoming a medium-thick or spool heel is a FAIL, even if both are technically "heels". The customer expects to see their chosen shoe style.
+
+Respond ONLY: PASS, ACCEPTABLE, or FAIL + brief reason.
+- PASS = same heel type AND similar thickness
+- ACCEPTABLE = same type, very slightly thicker but clearly still stiletto (or clearly still block)
+- FAIL = type changed OR thickness changed significantly (thin→medium, stiletto→spool/kitten)` }
+    );
+
+    const claudeBody = {
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 200,
+      messages: [{
+        role: 'user',
+        content: claudeImages
+      }]
+    };
+    
+    console.log('Sending to Claude for validation...');
+    console.log('Claude request original image size:', Math.round(originalImageB64.length / 1024), 'KB');
+    console.log('Claude request generated image size:', Math.round(generatedImageB64.length / 1024), 'KB');
+    
+    const claudeResp = await fetch('/api/anthropic', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(claudeBody)
+    });
+    
+    const claudeRespText = await claudeResp.text();
+    
+    if (!claudeResp.ok) {
+      console.log('Claude validation error status:', claudeResp.status);
+      console.log('Claude validation error body:', claudeRespText);
+      return { passed: true, reason: `Claude API error ${claudeResp.status}, allowing through` };
+    }
+    
+    const claudeData = JSON.parse(claudeRespText);
+    const claudeText = claudeData.content?.[0]?.text || 'PASS';
+    const upperText = claudeText.toUpperCase().trim();
+    const shapePassed = upperText.startsWith('PASS') || upperText.startsWith('ACCEPTABLE');
+    console.log(`  Stage 2 (Claude) result: ${claudeText}`);
+    
+    return { passed: shapePassed, reason: shapePassed ? 'PASS (height + shape OK)' : `FAIL shape - ${claudeText}` };
+  } catch (err) {
+    console.log('Stage 2 error (allowing through):', err);
+    return { passed: true, reason: 'shape check failed, allowing through' };
+  }
+}
+
+function setResultState(type, state, data = {}) {
+  const wrap = document.getElementById(`${type}-img-wrap`);
+  const regenBtn = document.getElementById(`${type}-regen`);
+
+  if (state === 'loading') {
+    wrap.innerHTML = `
+      <div class="result-loading">
+        <div class="spinner"></div>
+        <div class="progress-text">${data.progress || 'Generating...'}</div>
+        <div class="shimmer-bar"><div class="shimmer-fill"></div></div>
+      </div>`;
+    regenBtn.style.display = 'none';
+  } else if (state === 'image') {
+    wrap.innerHTML = `<img src="data:image/png;base64,${data.image}" alt="${type}">`;
+    regenBtn.style.display = '';
+  } else if (state === 'empty') {
+    const icon = type === 'product' ? '👟' : '👩';
+    const emptyText = type === 'product' ? 'Așteptăm selecția ta' : 'Aștept pantofii noi! 👠';
+    wrap.innerHTML = `<div class="result-empty"><span class="icon">${icon}</span><span class="text">${emptyText}</span></div>`;
+    regenBtn.style.display = 'none';
+  }
+}
+
+// ═══ HEEL PROPORTION VISUAL GUIDE ═══
+// Strategy: Instead of describing ratios in text (which Gemini ignores),
+// we RESIZE the actual shoe reference image to match the target H/W ratio.
+// This gives Gemini a visual that already has the correct proportions.
+
+function generateHeelGuideImage(hwRatio, heelLabel) {
+  // Simple labeled diagram as a secondary reference
+  const canvas = document.createElement('canvas');
+  canvas.width = 800;
+  canvas.height = 600;
+  const ctx = canvas.getContext('2d');
+  
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, 800, 600);
+  
+  const shoeWidth = 600;
+  const shoeHeight = Math.round(shoeWidth * hwRatio);
+  const startX = 100;
+  const floorY = 500;
+  const startY = floorY - shoeHeight;
+  
+  // Draw bounding box
+  ctx.strokeStyle = '#e00000';
+  ctx.lineWidth = 3;
+  ctx.setLineDash([10, 5]);
+  ctx.strokeRect(startX, startY, shoeWidth, shoeHeight);
+  ctx.setLineDash([]);
+  
+  // Width label
+  ctx.fillStyle = '#e00000';
+  ctx.font = 'bold 24px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText(`WIDTH = 100%`, startX + shoeWidth / 2, floorY + 35);
+  
+  // Height label
+  ctx.save();
+  ctx.translate(startX - 30, startY + shoeHeight / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText(`HEIGHT = ${(hwRatio * 100).toFixed(0)}%`, 0, 0);
+  ctx.restore();
+  
+  // Title
+  ctx.fillStyle = '#000';
+  ctx.font = 'bold 28px Arial';
+  ctx.fillText(`TARGET PROPORTIONS: ${heelLabel} heel`, 400, 40);
+  ctx.font = '20px Arial';
+  ctx.fillStyle = '#333';
+  ctx.fillText(`Shoe must fit INSIDE this box ratio`, 400, 75);
+  
+  return canvas.toDataURL('image/png').split(',')[1];
+}
+
+// Create a proportion-adjusted reference image
+// This resizes the shoe image to match the target H/W ratio
+function createProportionReference(sourceB64, sourceMime, targetHWRatio) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      // Measure current proportions
+      const currentRatio = img.height / img.width;
+      
+      // We want the output to have targetHWRatio
+      // Keep width the same, adjust height
+      const canvas = document.createElement('canvas');
+      const targetWidth = 1024;
+      const targetHeight = Math.round(targetWidth * targetHWRatio);
+      
+      // Add padding so the shoe sits on a "floor" with white space
+      const paddingTop = 100;
+      const paddingBottom = 100;
+      const paddingSide = 50;
+      
+      canvas.width = targetWidth + paddingSide * 2;
+      canvas.height = targetHeight + paddingTop + paddingBottom;
+      
+      const ctx = canvas.getContext('2d');
+      
+      // White background
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw the shoe scaled to fit the target proportions
+      // This is the key trick: we squash/stretch the shoe to the target ratio
+      ctx.drawImage(img, paddingSide, paddingTop, targetWidth, targetHeight);
+      
+      // Add a red bounding box to emphasize the proportions
+      ctx.strokeStyle = 'rgba(255, 0, 0, 0.4)';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([12, 6]);
+      ctx.strokeRect(paddingSide, paddingTop, targetWidth, targetHeight);
+      ctx.setLineDash([]);
+      
+      // Label
+      ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+      ctx.font = 'bold 18px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(`TARGET: height = ${(targetHWRatio * 100).toFixed(0)}% of width`, canvas.width / 2, paddingTop - 15);
+      
+      resolve(canvas.toDataURL('image/png').split(',')[1]);
+    };
+    img.src = `data:${sourceMime};base64,${sourceB64}`;
+  });
+}
+
+async function generateOne(type) {
+  loading[type] = true;
+  updateGenButton();
+  document.getElementById('error-box').style.display = 'none';
+  document.getElementById('results-section').classList.add('visible');
+
+  const mime = productImageB64.startsWith('data:image/png') ? 'image/png' : 'image/jpeg';
+  const rawB64 = productImageB64.split(',')[1];
+
+  // Check if we're in preview mode (no customization)
+  const isPreviewMode = currentMode === 'preview';
+  
+  // Check if selections are "original" (no changes)
+  // Auto-selected options (single option available) should be treated as "keep original"
+  const isOriginalHeel = !selectedHeel || selectedHeel.id === 'original' || heelAutoSelected;
+  const isOriginalMaterial = !selectedMaterial || selectedMaterial.id === 'original' || materialAutoSelected;
+  const isOriginalColor = !selectedColor || selectedColor.id === 'original' || colorAutoSelected;
+  const allOriginal = isPreviewMode || (isOriginalHeel && isOriginalMaterial && isOriginalColor);
+
+  // ═══ HEEL HEIGHT SYSTEM ═══
+  // Simplified approach matching the proven working version (shoe-atelier).
+  // Key: simpler prompts + "keep the SAME heel shape" works better than complex ratio instructions.
+  //
+  // RULE: If original shoe is flat (or ~1cm), any higher heel must be a STILETTO.
+  //        If original shoe already has a heel (not flat), keep the SAME heel type.
+  //
+  // CALIBRATION (workshop-verified, March 2026):
+  //   Gemini overshoots LOW heels significantly but gets HIGH heels roughly right.
+  //   Per-size correction instead of global offset:
+  //   6cm/6.5cm: heavy correction (Gemini adds ~1.5-2cm)
+  //   8cm: slight correction
+  //   9.5cm+: no correction needed, Gemini understands "high heel" naturally
+  
+  // Detect if original shoe is flat/nearly flat
+  const originalHeelsList = selectedProduct.heels?.split(',').map(h => h.trim()) || [];
+  const originalIsFlat = originalHeelsList.length > 0 && (
+    originalHeelsList[0] === 'flat' || 
+    originalHeelsList[0] === '0cm' || 
+    originalHeelsList[0] === '1cm' ||
+    selectedProduct.category === 'Pantofi fara toc' ||
+    selectedProduct.category === 'Balerini'
+  );
+  
+  // Per-size calibration: prompt value and descriptive language
+  const heelCalibration = {
+    'flat': { prompt: 'completely flat, no heel at all, zero elevation', desc: 'flat' },
+    '6cm':  { prompt: '3 cm', desc: 'low' },
+    '6.5cm':{ prompt: '3 cm', desc: 'low' },
+    '8cm':  { prompt: '8 cm', desc: 'medium' },
+    '9.5cm':{ prompt: '9.5 cm', desc: 'high' },
+    '10cm': { prompt: '10 cm', desc: 'high' },
+    '11cm': { prompt: '11 cm', desc: 'very high' },
+    '14cm': { prompt: '14 cm', desc: 'very high' },
+  };
+  
+  const heelInfo = heelCalibration[selectedHeel?.id] || { prompt: `${selectedHeel?.label || '8 cm'}`, desc: 'medium' };
+  const promptLabel = heelInfo.prompt;
+  const heelSizeDesc = heelInfo.desc;
+  
+  const heelGuide = (isPreviewMode || isOriginalHeel)
+    ? 'Keep the ORIGINAL heel height exactly as shown.'
+    : selectedHeel.id === 'flat'
+    ? 'Remove the heel completely — make it a flat sole with zero elevation at the back. No heel piece at all.'
+    : originalIsFlat
+    ? `Add an elegant heel approximately ${promptLabel} tall. Use a classic slim stiletto shape unless the shoe design suggests otherwise (e.g. boots or loafers should get a block heel).`
+    : `Change the heel height to approximately ${promptLabel}. 
+
+CRITICAL HEEL GEOMETRY RULES:
+- The heel must be a STRAIGHT-SIDED tapered pillar — same shape as the original, just shorter/taller.
+- The front face of the heel must drop down VERTICALLY from the sole, creating a SHARP, DEFINED corner at the attachment point.
+- The heel meets the sole at a SHARP ANGLE — a defined, nearly right-angle connection.
+- NOT curved. No concave swooping on the front of the heel. No banana shape.
+- Straight lines only, no organic curves on the heel shaft.
+- Avoid any curved blending, fillet, or swooping where heel meets sole.
+- The heel sides must remain RECTILINEAR — straight geometric lines from sole to ground.`;
+
+
+  try {
+    if (type === 'product') {
+      // If all original, just show the original product image
+      if (allOriginal) {
+        setResultState(type, 'loading', { progress: 'Se încarcă imaginea originală...' });
+        await new Promise(r => setTimeout(r, 500)); // Brief delay for UX
+        lastProductImageB64 = rawB64;
+        setResultState(type, 'image', { image: rawB64 });
+      } else {
+        // Generate modified product
+        // STEP 1: Claude analyzes the shoe and writes the Gemini prompt
+        setResultState(type, 'loading', { progress: 'Analizăm designul... 🎨' });
+
+        // Detect actual mime for Claude
+        function detectMimeB64(b64) {
+          if (b64.startsWith('/9j/')) return 'image/jpeg';
+          if (b64.startsWith('iVBOR')) return 'image/png';
+          if (b64.startsWith('R0lGO')) return 'image/gif';
+          if (b64.startsWith('UklGR')) return 'image/webp';
+          return 'image/jpeg';
+        }
+        const claudeOrigMime = detectMimeB64(rawB64);
+
+        // Build change description for Claude
+        let changeDesc = '';
+        if (!isOriginalHeel) changeDesc += `Heel height: change to ${selectedHeel.label} (${heelSizeDesc} heel).\n`;
+        if (!isOriginalColor) changeDesc += `Color: change to ${selectedColor.desc} (hex: ${selectedColor.hex}).\n`;
+        if (!isOriginalMaterial) changeDesc += `Material: change to ${selectedMaterial.texture}.\n`;
+        if (isOriginalHeel) changeDesc += 'Heel height: keep original.\n';
+        if (isOriginalColor) changeDesc += 'Color: keep original.\n';
+        if (isOriginalMaterial) changeDesc += 'Material: keep original.\n';
+
+        let claudeAnalysis = null;
+        let claudeHeelDescription = null;
+        
+        try {
+          const claudeAnalysisResp = await fetch('/api/anthropic', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: 'claude-sonnet-4-20250514',
+              max_tokens: 300,
+              messages: [{
+                role: 'user',
+                content: [
+                  { type: 'image', source: { type: 'base64', media_type: claudeOrigMime, data: rawB64 } },
+                  { type: 'text', text: `You are a shoe design expert. Analyze ONLY the HEEL SHAPE of this shoe (NOT its height). Describe:
+
+1. HEEL TYPE: Is it a stiletto, block/chunky, wedge, kitten, cone, or spool heel?
+2. THICKNESS: How thick is the heel? (thin stiletto ~8-12mm, block heel ~30-50mm)
+3. PROFILE: Is it straight/vertical, tapered, curved, or flared?
+4. SOLE CONNECTION: How does the heel attach to the sole? Sharp angle, gradual transition, or flush?
+5. CROSS-SECTION: Is the heel round, square, or rectangular?
+
+Start your response with the heel type in bold. DO NOT mention height — only shape.
+Write under 60 words.` }
+                ]
+              }]
+            })
+          });
+
+          if (claudeAnalysisResp.ok) {
+            const claudeData = await claudeAnalysisResp.json();
+            claudeHeelDescription = claudeData.content?.[0]?.text || null;
+            console.log('Claude heel description:', claudeHeelDescription);
+          } else {
+            const errText = await claudeAnalysisResp.text();
+            console.log('Claude heel analysis failed:', claudeAnalysisResp.status, errText.substring(0, 200));
+          }
+        } catch (e) {
+          console.log('Claude heel analysis error:', e);
+        }
+
+        // STEP 2: Generate with OpenAI (GPT-5.2 + Responses API)
+        setResultState(type, 'loading', { progress: 'Creăm pantofii tăi... 👠' });
+
+        // No reference image - cm-based prompting works better than visual comparison
+        let heelRefB64 = null;
+
+        // Detect heel info for logging
+        const allHeelCms = originalHeelsList.map(h => parseFloat(h) || 0);
+        const originalHeelCm = Math.max(...allHeelCms, 0);
+        const targetHeelCm = parseFloat(selectedHeel?.id) || 0;
+        console.log(`Heel detection: available=[${allHeelCms}], original/max=${originalHeelCm}cm, target=${targetHeelCm}cm`);
+
+        // OpenAI calibrated heel offsets (model overshoots, so we prompt lower)
+        const openaiCalibration = {
+          '6cm': '3 cm', '6.5cm': '3 cm', '8cm': '5 cm',
+          '9.5cm': '7 cm', '10cm': '8 cm', '11cm': '10 cm', '14cm': '13 cm',
+          'flat': 'flat — no heel at all'
+        };
+        const calibratedHeelLabel = openaiCalibration[selectedHeel?.id] || selectedHeel?.label || '6.5 cm';
+
+        // Build OpenAI images array
+        // Prepare image for OpenAI — downscale to ~800px width for better editing results
+        let openaiB64 = rawB64;
+        let openaiMime = mime;
+        try {
+          const downscaled = await new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+              const maxW = 800;
+              if (img.width <= maxW) { resolve(null); return; }
+              const scale = maxW / img.width;
+              const canvas = document.createElement('canvas');
+              canvas.width = maxW;
+              canvas.height = Math.round(img.height * scale);
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              resolve(canvas.toDataURL('image/jpeg', 0.90).split(',')[1]);
+            };
+            img.src = `data:${mime};base64,${rawB64}`;
+          });
+          if (downscaled) {
+            openaiB64 = downscaled;
+            openaiMime = 'image/jpeg';
+            console.log('Downscaled image for OpenAI:', Math.round(openaiB64.length/1024), 'KB');
+          }
+        } catch(e) { console.log('Downscale failed, using original'); }
+        
+        const openaiImages = [{ b64: openaiB64, mime: openaiMime }];
+        if (heelRefB64) {
+          openaiImages.push({ b64: heelRefB64, mime: 'image/jpeg' });
+        }
+
+        let currentHeelLabel = calibratedHeelLabel;
+
+        // Build OpenAI prompt function (with optional correction)
+        const buildOpenAIPrompt = (correction, heelLabel) => {
+          const useLabel = heelLabel || currentHeelLabel;
+          
+          // Detect if original is stiletto from Claude's analysis
+          const isStiletto = claudeHeelDescription && claudeHeelDescription.toLowerCase().includes('stiletto');
+          
+          // Different instructions for flat→heeled vs heeled→heeled
+          const heelShapeInstructions = originalIsFlat
+            ? `ADD a slim, elegant STILETTO heel approximately ${useLabel} tall.
+The heel must be:
+- THIN stiletto style (8-12mm width) — NOT a block heel, NOT chunky
+- Straight vertical profile with slight taper
+- The heel-to-sole connection must be a sharp, angular join — no curved fillet
+- Clean, narrow attachment to the sole
+- Elegant and refined, matching high-end luxury shoe aesthetics${claudeHeelDescription ? '\n\nOriginal shoe analysis: ' + claudeHeelDescription + '\nNote: original is flat — ADD a stiletto heel.' : ''}`
+            : isStiletto
+            ? `CRITICAL — preserve the STILETTO heel shape from this shoe:
+- Keep it THIN (8-12mm width) — this is a stiletto, NOT a block or chunky heel
+- Keep the same straight vertical angle — no curved or swooping heel
+- The heel-to-sole connection must remain a sharp, angular join — no curved fillet or spool shape
+- Keep the same heel thickness — do NOT make it thicker
+- The ONLY thing that changes is the heel LENGTH (height)`
+            : `CRITICAL — the heel in your output must look like a SHORTER/TALLER version of the original:
+- COPY the exact heel TYPE (if block → block, if stiletto → stiletto, if wedge → wedge)
+- COPY the exact heel WIDTH and THICKNESS — do not make it thinner or thicker
+- COPY the exact heel PROFILE (straight, curved, tapered)
+- COPY the exact sole-to-heel junction style
+- The ONLY thing that changes is the heel LENGTH (height)`;
+
+          let prompt = heelRefB64 
+            ? `IMAGE 1 is the shoe to edit. IMAGE 2 is a REAL ${selectedHeel.label} shoe — match its heel height.
+
+${originalIsFlat ? 'IMAGE 1 is a FLAT shoe. Add a slim stiletto heel the same height as IMAGE 2\'s heel.' : 'Make IMAGE 1\'s heel the SAME HEIGHT as IMAGE 2\'s heel. Your output shoe must have a heel that is SHORTER than IMAGE 1 — look at how short IMAGE 2\'s heel is and match that.'}
+
+${heelShapeInstructions}
+
+PRESERVE from IMAGE 1: toe shape, back style, straps, buckle, ${isOriginalColor ? 'color, ' : ''}material, camera angle, boot shaft height.
+CHANGE: heel height.${!isOriginalColor ? '\n\nALSO CHANGE COLOR to: ' + selectedColor.desc + ' (hex: ' + selectedColor.hex + ').' : ''}${!isOriginalMaterial ? '\nALSO CHANGE MATERIAL to: ' + selectedMaterial.texture + '.' : ''}
+
+Professional e-commerce product photo, off-white background, photorealistic.`
+            : `${originalIsFlat ? 'Add a heel to this flat shoe.' : 'Edit this shoe to have a ' + useLabel + ' heel height.'}
+
+${heelShapeInstructions}
+
+PRESERVE: toe shape, back style, straps, buckle, ${isOriginalColor ? 'color, ' : ''}material, camera angle, boot shaft height.
+CHANGE: heel height.${!isOriginalColor ? '\n\nALSO CHANGE COLOR to: ' + selectedColor.desc + ' (hex: ' + selectedColor.hex + ').' : ''}${!isOriginalMaterial ? '\nALSO CHANGE MATERIAL to: ' + selectedMaterial.texture + '.' : ''}
+
+Professional e-commerce product photo, off-white background, photorealistic.`;
+
+          if (correction) prompt += '\n\n' + correction;
+          return prompt;
+        };
+
+        // Generation with validation loop (max 3 attempts)
+        const MAX_ATTEMPTS = 3;
+        let generatedImage = null;
+        let bestCandidate = null;
+        let bestCandidateScore = Infinity;
+        let lastCorrection = '';
+        
+        console.log('🔵 Using OpenAI GPT-5.2, calibrated heel:', calibratedHeelLabel, 'with', openaiImages.length, 'images');
+        
+        for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+          if (attempt > 1) {
+            const friendlyMessages = [
+              'Perfecționăm designul... ✨',
+              'Aproape gata, mai adăugăm câteva detalii... 👠',
+              'Ultimele retușuri... 💫'
+            ];
+            setResultState(type, 'loading', { progress: friendlyMessages[attempt - 1] || 'Mai avem puțin...' });
+          }
+          
+          let resultImage = null;
+          
+          try {
+            const openaiPrompt = buildOpenAIPrompt(lastCorrection);
+            console.log(`Attempt ${attempt} prompt:`, openaiPrompt.substring(0, 150) + '...');
+            resultImage = await callOpenAIImageEdit(openaiImages, openaiPrompt);
+          } catch (e) {
+            console.error(`OpenAI attempt ${attempt} failed:`, e.message);
+            if (attempt === MAX_ATTEMPTS && bestCandidate) break;
+            if (attempt === MAX_ATTEMPTS) throw e;
+            continue;
+          }
+          
+          if (!resultImage) {
+            if (attempt === MAX_ATTEMPTS && bestCandidate) break;
+            if (attempt === MAX_ATTEMPTS) throw new Error('No image generated');
+            continue;
+          }
+          
+          // Validate if heel changed — SHAPE ONLY (height is approximate by design)
+          if (!isOriginalHeel) {
+            setResultState(type, 'loading', { progress: 'Verificăm fiecare detaliu... 🔍' });
+            
+            const measurement = await measureShoeHWRatio(resultImage);
+            const targetData = TARGET_HW_RATIOS[selectedHeel.id];
+            const score = targetData ? Math.abs(measurement.ratio - targetData.target) : 1;
+            
+            if (score < bestCandidateScore) {
+              bestCandidate = resultImage;
+              bestCandidateScore = score;
+            }
+            
+            // Log height info but don't fail on it
+            if (targetData) {
+              const estimatedCm = ((measurement.ratio - 0.30) / 0.030).toFixed(1);
+              console.log(`Height check (info only): H/W=${measurement.ratio.toFixed(3)}, ~${estimatedCm}cm (target ${selectedHeel.label})`);
+            }
+            
+            // Only validate SHAPE via Claude
+            const validation = await validateShapeOnly(resultImage, rawB64, mime);
+            
+            if (validation.passed) {
+              console.log(`Attempt ${attempt}: PASSED shape validation`);
+              generatedImage = resultImage;
+              break;
+            } else {
+              console.log(`Attempt ${attempt}: FAILED - ${validation.reason}`);
+              
+              // Build correction for next attempt — shape only
+              if (attempt < MAX_ATTEMPTS) {
+                const failReason = validation.reason.replace('FAIL shape - ', '').replace('FAIL - ', '');
+                lastCorrection = `⚠️ SHAPE ERROR: ${failReason}. 
+Look at the original shoe carefully — your output heel must be the SAME TYPE and THICKNESS. 
+If the original has a thin stiletto, make a THIN stiletto (8-12mm). Do NOT make it thicker or chunkier.
+COPY the heel form exactly — only change the height.`;
+                console.log(`Correction for attempt ${attempt + 1}: ${lastCorrection}`);
+              }
+            }
+          } else {
+            generatedImage = resultImage;
+            break;
+          }
+        }
+        
+        // Use best candidate if no attempt fully passed
+        if (!generatedImage && bestCandidate) {
+          console.log(`No attempt passed. Using best candidate (score: ${bestCandidateScore.toFixed(3)})`);
+          generatedImage = bestCandidate;
+        }
+        
+        if (generatedImage) {
+          lastProductImageB64 = generatedImage;
+          setResultState(type, 'image', { image: generatedImage });
+        } else {
+          throw new Error('No image generated after multiple attempts');
+        }
+      }
+
+    } else {
+      // Model shot - always generate, using either original or modified product
+      setResultState(type, 'loading', { progress: 'Pregătim ținuta completă... 👗' });
+
+      const refB64 = lastProductImageB64 || rawB64;
+      const refMime = lastProductImageB64 ? 'image/png' : mime;
+      const isProductRef = !!lastProductImageB64;
+
+      // Build color description with hex for non-preview mode
+      const colorDesc = (currentMode === 'preview' || !selectedColor) 
+        ? 'original color' 
+        : `${selectedColor.desc} (hex: ${selectedColor.hex})`;
+      const materialDesc = (currentMode === 'preview' || !selectedMaterial) 
+        ? 'original material' 
+        : selectedMaterial.texture;
+
+      const shoeDesc = isProductRef
+        ? `This product photo shows the EXACT shoe. It already has correct color, material, heel. Do NOT change it — place this exact shoe on the model.`
+        : `Apply: HEEL: ${heelGuide}, COLOR: ${colorDesc} - match EXACTLY, MATERIAL: ${materialDesc}. Keep same silhouette/strap/toe.`;
+
+      const modelPrompt = `${shoeDesc}
+
+Create a fashion editorial photo of a stylish woman wearing this EXACT shoe.
+OUTFIT: ${selectedOccasion.outfit}
+SETTING: ${selectedOccasion.scene}
+
+FRAMING (CRITICAL): Full-body shot from HEAD TO FEET — the ENTIRE body must be visible including the shoes on her feet. The shoes must be FULLY visible and clearly identifiable at the bottom of the frame. Do NOT crop at the ankles or calves. Leave space below the feet.
+
+CRITICAL SHOE ACCURACY RULES:
+• The shoe on the model must match the reference photo EXACTLY — same heel type, same straps, same silhouette.
+• Do NOT add straps that don't exist in the reference.
+• Do NOT change slingback to ankle strap.
+• If the reference shows open-toe, keep open-toe. If closed-toe, keep closed-toe.
+• Keep the heel height exactly as shown in the reference photo.
+
+Professional fashion photography. No text/watermarks.`;
+
+      // Try Gemini first (faster), fall back to OpenAI
+      let modelImage = null;
+      try {
+        console.log('🎭 Starting model shot with Gemini...');
+        modelImage = await callGeminiImageGen([
+          { inlineData: { mimeType: refMime, data: refB64 } },
+          { text: modelPrompt }
+        ]);
+        console.log('🎭 Gemini model shot success, image size:', modelImage ? Math.round(modelImage.length/1024) + ' KB' : 'null');
+      } catch (geminiErr) {
+        console.log('🎭 Gemini model shot failed, falling back to OpenAI:', geminiErr.message);
+      }
+      if (!modelImage) {
+        // Fallback to OpenAI
+        console.log('🎭 Using OpenAI for model shot...');
+        modelImage = await callOpenAIImageEdit(
+          [{ b64: refB64, mime: refMime }],
+          modelPrompt,
+          '1024x1536'
+        );
+      }
+      if (modelImage) {
+        setResultState(type, 'image', { image: modelImage });
+        showOrderSection();
+      } else {
+        throw new Error('No image generated');
+      }
+    }
+  } catch (err) {
+    document.getElementById('error-box').textContent = err.message;
+    document.getElementById('error-box').style.display = '';
+    setResultState(type, 'empty');
+  } finally {
+    loading[type] = false;
+    updateGenButton();
+  }
+}
+
+function generateAll() {
+  if (currentMode === 'preview') {
+    // In preview mode, skip product generation, just generate model shot
+    // Store original image as lastProductImageB64 for model generation
+    const rawB64 = productImageB64.split(',')[1];
+    lastProductImageB64 = rawB64;
+    generateOne('model');
+  } else {
+    // In customize mode, generate both
+    generateOne('product').then(() => generateOne('model'));
+  }
+}
+
+// Color to URL suffix mapping (Romanian color names in URLs)
+const COLOR_URL_SUFFIXES = {
+  // Neutrals
+  'negru': ['negri', 'negre', 'negru', 'black'],
+  'alb': ['albi', 'albe', 'alb', 'white'],
+  'alb-murdar': ['alb-murdar', 'alb-unt', 'off-white'],
+  'off-white': ['off-white', 'alb-murdar'],
+  'alb-unt': ['alb-unt', 'alb-murdar'],
+  'gri': ['gri', 'grey', 'gray'],
+  'gri deschis': ['gri-deschis', 'gri'],
+  'gri inchis': ['gri-inchis', 'gri'],
+  'gri-argintiu': ['gri-argintiu'],
+  'gri-liliac': ['gri-liliac'],
+  'gri-olive': ['gri-olive'],
+  
+  // Nudes & Beiges
+  'nude': ['nude', 'bej'],
+  'nude-auriu': ['nude-auriu'],
+  'nude-negru': ['nude-negru'],
+  'bej': ['bej', 'nude'],
+  'grej': ['grej'],
+  'vanilla': ['vanilla', 'vanilla-haze'],
+  'vanilla haze': ['vanilla-haze', 'vanilla'],
+  
+  // Browns
+  'maro': ['maro', 'maron', 'brown'],
+  'maron': ['maron', 'maro'],
+  'maro inchis': ['maro-inchis', 'maron'],
+  'maro-caramel': ['maro-caramel', 'caramel'],
+  'maron-caramel': ['maron-caramel', 'caramel'],
+  'maro-ciocolatiu': ['maro-ciocolatiu', 'ciocolatiu'],
+  'camel': ['camel'],
+  'caramel': ['caramel'],
+  'caramiziu': ['caramiziu'],
+  'mocha mousse': ['mocha-mousse', 'mocha'],
+  
+  // Reds
+  'rosu': ['rosii', 'rosie', 'rosu', 'red'],
+  'rosu-intens': ['rosu-intens', 'rosii'],
+  'burgundy': ['burgundy', 'visiniu'],
+  'bordeaux': ['bordeaux', 'burgundy'],
+  'plum': ['plum'],
+  
+  // Pinks
+  'roz': ['roz', 'pink'],
+  'roz-nude': ['roz-nude', 'roz'],
+  'roz-piersica': ['roz-piersica', 'piersica'],
+  'roz-negru': ['roz-negru'],
+  'rose': ['rose', 'roz'],
+  'fucsia': ['fucsia', 'fuchsia'],
+  
+  // Oranges & Yellows
+  'portocaliu': ['portocalii', 'portocaliu', 'orange'],
+  'galben-lime': ['galben-lime', 'lime'],
+  'galben-mustar': ['galben-mustar', 'mustar'],
+  'galben-pai': ['galben-pai', 'pai'],
+  'galben pal': ['galben-pal'],
+  'neon': ['neon'],
+  
+  // Greens
+  'verde': ['verde', 'verzi', 'green'],
+  'verde smarald': ['verde-smarald', 'smarald'],
+  'verde forest': ['verde-forest'],
+  'verde inchis': ['verde-inchis'],
+  'verde-menta': ['verde-menta', 'menta', 'mint'],
+  'verde-mint': ['verde-mint', 'mint'],
+  'verde-salvie': ['verde-salvie', 'salvie'],
+  'kaki': ['kaki', 'khaki'],
+  
+  // Blues
+  'albastru': ['albastru', 'albastre', 'blue'],
+  'blue': ['blue', 'albastru'],
+  'albastru electric': ['albastru-electric'],
+  'albastru-celest': ['albastru-celest', 'celest'],
+  'albastru-petrol': ['albastru-petrol', 'petrol'],
+  'albastru-royal': ['albastru-royal', 'royal'],
+  'bleumarin': ['bleumarin', 'navy'],
+  'indigo': ['indigo'],
+  'turcoaz': ['turcoaz', 'turquoise'],
+  'aqua': ['aqua'],
+  
+  // Purples
+  'lila': ['lila', 'liliac'],
+  'mov': ['mov', 'purple'],
+  'mov-lavanda': ['mov-lavanda', 'lavanda'],
+  'mov metalizat': ['mov-metalizat'],
+  
+  // Metallics
+  'auriu': ['aurii', 'auriu', 'gold'],
+  'auriu-rose': ['auriu-rose', 'rose-gold'],
+  'auriu-negru': ['auriu-negru'],
+  'argintiu': ['argintii', 'argintiu', 'silver'],
+  'argintiu-negru': ['argintiu-negru'],
+  'argintiu-oglinda': ['argintiu-oglinda'],
+  
+  // Special
+  'transparent': ['silicon', 'transparent'],
+  'animal print': ['animal-print', 'leopard'],
+  
+  // Combos
+  'alb-negru': ['alb-negru'],
+  'alb/auriu': ['alb-auriu'],
+  'alb/negru': ['alb-negru'],
+};
+
+// Try to build color-specific URL
+function buildColorSpecificUrl(baseUrl, colorId) {
+  if (!baseUrl || !colorId) return baseUrl;
+  
+  // Get possible suffixes for this color
+  const suffixes = COLOR_URL_SUFFIXES[colorId];
+  if (!suffixes || suffixes.length === 0) return baseUrl;
+  
+  // Parse the base URL to extract the product slug
+  const urlParts = baseUrl.split('/');
+  const productSlug = urlParts[urlParts.length - 1];
+  
+  // Try each suffix - the first one is most common
+  const primarySuffix = suffixes[0];
+  
+  // Check if URL already ends with a color suffix
+  const hasColorSuffix = Object.values(COLOR_URL_SUFFIXES).flat().some(suffix => 
+    productSlug.endsWith('-' + suffix)
+  );
+  
+  if (hasColorSuffix) {
+    // Replace existing color suffix with new one
+    let newSlug = productSlug;
+    for (const suffixList of Object.values(COLOR_URL_SUFFIXES)) {
+      for (const suffix of suffixList) {
+        if (productSlug.endsWith('-' + suffix)) {
+          newSlug = productSlug.replace(new RegExp('-' + suffix + '$'), '-' + primarySuffix);
+          break;
+        }
+      }
+    }
+    urlParts[urlParts.length - 1] = newSlug;
+  } else {
+    // Append color suffix to the slug
+    urlParts[urlParts.length - 1] = productSlug + '-' + primarySuffix;
+  }
+  
+  return urlParts.join('/');
+}
+
+// Check if a URL exists (returns true if accessible)
+async function urlExists(url) {
+  try {
+    const response = await fetch(url, { method: 'HEAD', mode: 'no-cors' });
+    // With no-cors, we can't read the status, but if it doesn't throw, the URL is likely valid
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+// Alternative: Try to validate via Shopify's pattern (checking if page loads)
+async function validateShopifyUrl(url) {
+  try {
+    // Use a simple fetch to check - Shopify returns 200 for valid products
+    // We'll use an img trick to avoid CORS issues
+    return new Promise((resolve) => {
+      const img = new Image();
+      const timeout = setTimeout(() => {
+        resolve(false);
+      }, 3000);
+      
+      // Try to load the OpenGraph image which exists for valid products
+      img.onload = () => {
+        clearTimeout(timeout);
+        resolve(true);
+      };
+      img.onerror = () => {
+        clearTimeout(timeout);
+        resolve(false);
+      };
+      
+      // Shopify products have predictable OG image URLs
+      // But this isn't reliable, so let's just try the URL directly
+      // For now, we'll use a simpler approach
+      resolve(true); // Assume valid, Shopify will handle 404 gracefully
+    });
+  } catch {
+    return false;
+  }
+}
+
+// Build list of possible URLs for a color (tries multiple suffixes)
+function buildPossibleColorUrls(baseUrl, colorId) {
+  if (!baseUrl || !colorId) return [baseUrl];
+  
+  const suffixes = COLOR_URL_SUFFIXES[colorId];
+  if (!suffixes || suffixes.length === 0) return [baseUrl];
+  
+  const urls = [];
+  const urlParts = baseUrl.split('/');
+  const productSlug = urlParts[urlParts.length - 1];
+  
+  // Check if URL already ends with a color suffix
+  const currentSuffix = Object.values(COLOR_URL_SUFFIXES).flat().find(suffix => 
+    productSlug.endsWith('-' + suffix)
+  );
+  
+  for (const suffix of suffixes) {
+    const newUrlParts = [...urlParts];
+    if (currentSuffix) {
+      // Replace existing suffix
+      newUrlParts[newUrlParts.length - 1] = productSlug.replace(new RegExp('-' + currentSuffix + '$'), '-' + suffix);
+    } else {
+      // Append suffix
+      newUrlParts[newUrlParts.length - 1] = productSlug + '-' + suffix;
+    }
+    urls.push(newUrlParts.join('/'));
+  }
+  
+  return urls;
+}
+
+// Find the best URL - validates via server to avoid CORS issues
+async function findValidUrl(candidateUrls, fallbackUrl) {
+  for (const url of candidateUrls) {
+    try {
+      const response = await fetch(`/api/validate-url?url=${encodeURIComponent(url)}`);
+      const data = await response.json();
+      
+      if (data.valid) {
+        console.log('Valid URL found:', url);
+        return url;
+      } else {
+        console.log('URL not valid:', url, data.status || data.error);
+      }
+    } catch (error) {
+      console.log('Validation error for URL:', url, error);
+    }
+  }
+  
+  // No valid color-specific URL found, use fallback
+  console.log('No valid color URL found, using base:', fallbackUrl);
+  return fallbackUrl;
+}
+
+async function showOrderSection() {
+  const section = document.getElementById('order-section');
+  const summary = document.getElementById('order-summary');
+  const btn = document.getElementById('order-btn');
+  
+  // Base URL as fallback
+  const baseUrl = selectedProduct.shopify_url;
+  let orderUrl = baseUrl;
+  
+  if (currentMode === 'preview') {
+    summary.innerHTML = `
+      <strong>${selectedProduct.name}</strong><br>
+      Design original<br>
+      Perfect pentru: ${selectedOccasion.label}
+    `;
+    // Use base product URL for preview mode
+  } else {
+    summary.innerHTML = `
+      <strong>${selectedProduct.name}</strong><br>
+      ${selectedHeel?.label || 'Original'} · ${selectedMaterial?.label || 'Original'} · ${selectedColor?.label || 'Original'}<br>
+      Perfect pentru: ${selectedOccasion.label}
+    `;
+    
+    // Try to build and validate color-specific URL if color was changed
+    if (selectedColor && selectedColor.id !== 'original') {
+      // Show loading state on button while checking URL
+      btn.textContent = 'Se verifică linkul...';
+      btn.href = '#';
+      
+      // Get all possible URLs for this color
+      const candidateUrls = buildPossibleColorUrls(baseUrl, selectedColor.id);
+      
+      // Try to find a valid URL, fall back to base if none work
+      try {
+        orderUrl = await findValidUrl(candidateUrls, baseUrl);
+      } catch (error) {
+        console.log('URL validation failed, using base URL:', error);
+        orderUrl = baseUrl;
+      }
+      
+      // Restore button text
+      btn.innerHTML = '🛒&nbsp;&nbsp;Comandă Acest Design';
+    }
+  }
+  
+  btn.href = orderUrl;
+  section.classList.add('visible');
+}
+
+// Close modal on escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') hideApiModal();
+});
+</script>
+</body>
+</html>
