@@ -1523,11 +1523,12 @@ async function callGeminiImageGen(parts) {
 }
 
 // GPT-4o Image Edit function
-async function callOpenAIImageEdit(images, prompt, size) {
+async function callOpenAIImageEdit(images, prompt, size, inputFidelity, extraOptions) {
   // images can be: array of {b64, mime} OR legacy (b64String, mime not used)
   const imageArray = Array.isArray(images) ? images : [{ b64: images, mime: 'image/jpeg' }];
+  const opts = extraOptions || {};
   
-  console.log('Calling OpenAI Responses API...', imageArray.length, 'images');
+  console.log('Calling OpenAI Responses API...', imageArray.length, 'images', 'fidelity:', inputFidelity || 'high', opts.model ? 'model:' + opts.model : '');
   console.log('Prompt:', prompt.substring(0, 200) + '...');
   
   const resp = await fetch('/api/openai-image', {
@@ -1538,7 +1539,10 @@ async function callOpenAIImageEdit(images, prompt, size) {
       images: imageArray,
       size: size || '1024x1024',
       quality: 'high',
-      useResponses: true
+      useResponses: true,
+      input_fidelity: inputFidelity || 'high',
+      ...(opts.model ? { model: opts.model } : {}),
+      ...(opts.action ? { action: opts.action } : {})
     })
   });
   
@@ -1627,6 +1631,135 @@ function measureShoeHWRatio(imageB64) {
     img.src = `data:image/png;base64,${imageB64}`;
   });
 }
+
+// Measure heel height in pixels using algorithmic analysis
+// Returns: heelPx (heel length), widthPx (shoe width), heelRatio (heel/width)
+function measureHeelPixels(imageB64) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+      
+      // Build shoe mask (non-white pixels, excluding pure black)
+      const isShoe = (x, y) => {
+        const i = (y * canvas.width + x) * 4;
+        const r = data[i], g = data[i+1], b = data[i+2];
+        if (r > 215 && g > 215 && b > 215) return false; // white bg
+        if (r < 30 && g < 30 && b < 30) return false; // pure black (reference lines)
+        return true;
+      };
+      
+      // Find bounding box
+      let minX = canvas.width, maxX = 0, minY = canvas.height, maxY = 0;
+      for (let y = 0; y < canvas.height; y++) {
+        for (let x = 0; x < canvas.width; x++) {
+          if (isShoe(x, y)) {
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+          }
+        }
+      }
+      
+      const shoeW = maxX - minX;
+      const shoeH = maxY - minY;
+      
+      if (shoeW < 50 || shoeH < 50) {
+        resolve(null);
+        return;
+      }
+      
+      // Find the bottom edge of the shoe in each column
+      const bottomEdge = {};
+      for (let x = minX; x <= maxX; x++) {
+        for (let y = maxY; y >= minY; y--) {
+          if (isShoe(x, y)) {
+            bottomEdge[x] = y;
+            break;
+          }
+        }
+      }
+      
+      // Find heel tip: lowest point in left 30%
+      const heelRegionEnd = minX + Math.round(shoeW * 0.30);
+      let heelTipY = 0;
+      for (let x = minX; x <= heelRegionEnd; x++) {
+        if (bottomEdge[x] && bottomEdge[x] > heelTipY) {
+          heelTipY = bottomEdge[x];
+        }
+      }
+      
+      // Find heel junction using WIDTH NARROWING approach
+      // Only look in the lower 60% of the shoe (where the heel is)
+      const heelColumnEnd = minX + Math.round(shoeW * 0.25);
+      const searchStartY = minY + Math.round(shoeH * 0.40); // Start from 40% down
+      const widthsAtY = [];
+      for (let y = searchStartY; y <= heelTipY; y++) {
+        let count = 0;
+        for (let x = minX; x <= heelColumnEnd; x++) {
+          if (isShoe(x, y)) count++;
+        }
+        if (count > 5) widthsAtY.push({ y, w: count });
+      }
+      
+      // Find where consecutive narrowing begins (4 out of 5 drops)
+      let junctionY = heelTipY; // fallback
+      for (let i = 0; i < widthsAtY.length - 5; i++) {
+        let drops = 0;
+        for (let j = 0; j < 5; j++) {
+          if (widthsAtY[i+j+1].w < widthsAtY[i+j].w) drops++;
+        }
+        if (drops >= 4) {
+          junctionY = widthsAtY[i].y;
+          break;
+        }
+      }
+      
+      const heelPx = Math.max(0, heelTipY - junctionY);
+      const heelRatio = heelPx / shoeW;
+      
+      // Measure heel WIDTH at 75% down the heel (near the tip, where only the heel stick exists)
+      // Only scan the leftmost 20% of the shoe where the heel is
+      let heelWidthPx = 0;
+      if (heelPx > 10) {
+        const measureY = Math.round(junctionY + heelPx * 0.75); // Near the tip
+        const heelScanEnd = minX + Math.round(shoeW * 0.20); // Only left 20%
+        for (let x = minX; x <= heelScanEnd; x++) {
+          if (isShoe(x, measureY)) heelWidthPx++;
+        }
+      }
+      const heelWidthRatio = heelWidthPx / shoeW;
+      // Classification: <5% = stiletto, 5-10% = medium, >10% = block
+      const heelType = heelWidthRatio < 0.05 ? 'stiletto' : heelWidthRatio < 0.10 ? 'medium' : 'block';
+      
+      console.log(`📏 Pixel measurement: shoe ${shoeW}w×${shoeH}h, junction@${junctionY}, heelTip@${heelTipY}, heel=${heelPx}px, ratio=${heelRatio.toFixed(4)}, heelWidth=${heelWidthPx}px (${(heelWidthRatio*100).toFixed(1)}%) → ${heelType}`);
+      
+      resolve({ heelPx, widthPx: shoeW, heelRatio, junctionY, heelTipY, heelWidthPx, heelWidthRatio, heelType });
+    };
+    img.onerror = () => resolve(null);
+    img.src = `data:image/png;base64,${imageB64}`;
+  });
+}
+
+// CALIBRATED heel/width ratios from actual Ginissima 6.5cm shoe
+// Measured using consecutive-narrowing junction detection: 203px heel on 758px shoe = 0.268
+// All other heights calculated proportionally (same shoe size = 37-38 EU)
+const HEEL_RATIO_TARGETS = {
+  'flat':  { ratio: 0.00, tolerance: 0.04 },
+  '6cm':   { ratio: 0.247, tolerance: 0.04 },
+  '6.5cm': { ratio: 0.268, tolerance: 0.04 },
+  '8cm':   { ratio: 0.330, tolerance: 0.04 },
+  '9.5cm': { ratio: 0.392, tolerance: 0.05 },
+  '10cm':  { ratio: 0.412, tolerance: 0.05 },
+  '11cm':  { ratio: 0.453, tolerance: 0.06 },
+  '14cm':  { ratio: 0.577, tolerance: 0.07 },
+};
 
 async function validateShapeOnly(generatedImageB64, originalImageB64, originalMime) {
   try {
@@ -1751,17 +1884,19 @@ async function validateGeneration(generatedImageB64, originalImageB64, originalM
 
 Check these STRICTLY:
 
-1. HEEL THICKNESS: If IMAGE 1 has a THIN stiletto heel (8-12mm), IMAGE 2 must ALSO have a thin stiletto. FAIL if IMAGE 2's heel is noticeably thicker, chunkier, or wider than IMAGE 1's heel (proportional to length).
+1. HEEL THICKNESS: If IMAGE 1 has a THIN stiletto heel (8-12mm), IMAGE 2 must ALSO have a thin stiletto. FAIL if IMAGE 2's heel is noticeably thicker, chunkier, or wider than IMAGE 1's heel.
 
-2. HEEL PROFILE: Same straight/curved character? FAIL if IMAGE 1 is straight but IMAGE 2 is curved/spool-shaped, or vice versa.
+2. HEEL PROFILE: Must be STRAIGHT and VERTICAL like IMAGE 1. FAIL if IMAGE 2 has a CURVED heel, spool shape, hourglass shape, or any bend. The heel must go straight down from sole to tip with no curvature.
 
-3. HEEL TYPE: Stiletto must stay stiletto. Block must stay block. FAIL if type changed.
+3. HEEL-SOLE JUNCTION: Must be a SHARP ANGLE like IMAGE 1. FAIL if IMAGE 2 has a rounded, curved, or filleted transition where heel meets sole.
 
-4. TOE: Open stays open, pointed stays pointed.
+4. HEEL TYPE: Stiletto must stay stiletto. Block must stay block. FAIL if type changed.
 
-5. BACK: Slingback stays slingback, pump stays pump.
+5. TOE: Open stays open, pointed stays pointed.
 
-BE STRICT about thickness. A thin stiletto becoming a medium-thick or spool heel is a FAIL, even if both are technically "heels". The customer expects to see their chosen shoe style.
+6. BACK: Slingback stays slingback, pump stays pump.
+
+BE STRICT. The customer expects the EXACT same shoe, just shorter. Any visible curve, thickness change, junction style change, or distortion of the shoe upper/toe/ornament is a FAIL.
 
 Respond ONLY: PASS, ACCEPTABLE, or FAIL + brief reason.
 - PASS = same heel type AND similar thickness
@@ -2086,17 +2221,34 @@ Write under 60 words.` }
           console.log('Claude heel analysis error:', e);
         }
 
+        // Detect heel info 
+        const allHeelCms = originalHeelsList.map(h => parseFloat(h) || 0);
+        const originalHeelCm = Math.max(...allHeelCms, 0);
+        const targetHeelCm = parseFloat(selectedHeel?.id) || 0;
+        console.log(`Heel detection: available=[${allHeelCms}], original/max=${originalHeelCm}cm, target=${targetHeelCm}cm`);
+
+        // STEP 1b: Measure heel pixels in ORIGINAL image for relative comparison
+        // We measure both original and generated with the same algorithm,
+        // then calculate: generatedCm = genRatio/origRatio × origCm
+        let originalHeelMeasurement = null;
+        const targetHeelData = HEEL_RATIO_TARGETS[selectedHeel?.id];
+        if (!isOriginalHeel && selectedHeel.id !== 'flat') {
+          setResultState(type, 'loading', { progress: 'Calibrăm măsurătorile... 📏' });
+          originalHeelMeasurement = await measureHeelPixels(rawB64);
+          if (originalHeelMeasurement) {
+            console.log(`📏 Original heel: ratio=${originalHeelMeasurement.heelRatio.toFixed(4)}, known=${originalHeelCm}cm`);
+            console.log(`📏 Target: ${selectedHeel.label} → ratio should be ${(originalHeelMeasurement.heelRatio * targetHeelCm / originalHeelCm).toFixed(4)}`);
+          }
+          if (targetHeelData) {
+            console.log(`📏 Absolute target heel ratio: ${targetHeelData.ratio.toFixed(3)} ± ${targetHeelData.tolerance} for ${selectedHeel.label}`);
+          }
+        }
+
         // STEP 2: Generate with OpenAI (GPT-5.2 + Responses API)
         setResultState(type, 'loading', { progress: 'Creăm pantofii tăi... 👠' });
 
         // No reference image - cm-based prompting works better than visual comparison
         let heelRefB64 = null;
-
-        // Detect heel info for logging
-        const allHeelCms = originalHeelsList.map(h => parseFloat(h) || 0);
-        const originalHeelCm = Math.max(...allHeelCms, 0);
-        const targetHeelCm = parseFloat(selectedHeel?.id) || 0;
-        console.log(`Heel detection: available=[${allHeelCms}], original/max=${originalHeelCm}cm, target=${targetHeelCm}cm`);
 
         // OpenAI calibrated heel offsets (model overshoots, so we prompt lower)
         const openaiCalibration = {
@@ -2106,23 +2258,28 @@ Write under 60 words.` }
         };
         const calibratedHeelLabel = openaiCalibration[selectedHeel?.id] || selectedHeel?.label || '6.5 cm';
 
+        // Determine fidelity based on heel reduction ratio
+        const heightReductionRatio = originalHeelCm > 0 ? targetHeelCm / originalHeelCm : 1;
+        let productFidelity = heightReductionRatio < 0.75 ? 'low' : 'high';
+        console.log(`Fidelity: ${productFidelity} (reduction ratio: ${heightReductionRatio.toFixed(2)})`);
+
         // Build OpenAI images array
-        // Prepare image for OpenAI — downscale to ~800px width for better editing results
+        // Prepare image for OpenAI — smaller image = more freedom for GPT to modify
         let openaiB64 = rawB64;
         let openaiMime = mime;
         try {
+          const targetWidth = productFidelity === 'low' ? 512 : 800;
           const downscaled = await new Promise((resolve) => {
             const img = new Image();
             img.onload = () => {
-              const maxW = 800;
-              if (img.width <= maxW) { resolve(null); return; }
-              const scale = maxW / img.width;
+              if (img.width <= targetWidth) { resolve(null); return; }
+              const scale = targetWidth / img.width;
               const canvas = document.createElement('canvas');
-              canvas.width = maxW;
+              canvas.width = targetWidth;
               canvas.height = Math.round(img.height * scale);
               const ctx = canvas.getContext('2d');
               ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-              resolve(canvas.toDataURL('image/jpeg', 0.90).split(',')[1]);
+              resolve(canvas.toDataURL('image/jpeg', 0.85).split(',')[1]);
             };
             img.src = `data:${mime};base64,${rawB64}`;
           });
@@ -2141,34 +2298,82 @@ Write under 60 words.` }
         let currentHeelLabel = calibratedHeelLabel;
 
         // Build OpenAI prompt function (with optional correction)
+        // Detect if original is stiletto from Claude's analysis
+        const isStiletto = claudeHeelDescription && claudeHeelDescription.toLowerCase().includes('stiletto');
+
+        // Map heel heights to correct design terminology
+        // Kitten heel: 3-6.5cm (low, slim, elegant)
+        // Mid heel: 7-8cm
+        // Stiletto: 8cm+ (high, thin, dramatic)
+        const heelTerminology = {
+          'flat': { term: 'flat', desc: 'completely flat, no heel' },
+          '6cm': { term: 'kitten heel', desc: 'a slim, elegant kitten heel — thin and straight, 6cm tall' },
+          '6.5cm': { term: 'kitten heel', desc: 'a slim, elegant kitten heel — thin and straight, 6.5cm tall' },
+          '8cm': { term: 'mid-height stiletto', desc: 'a mid-height stiletto heel — thin and straight, 8cm tall' },
+          '9.5cm': { term: 'stiletto', desc: 'a stiletto heel — thin, elegant, 9.5cm tall' },
+          '10cm': { term: 'stiletto', desc: 'a high stiletto heel — thin, elegant, 10cm tall' },
+          '11cm': { term: 'stiletto', desc: 'a high stiletto heel — thin, elegant, 11cm tall' },
+          '14cm': { term: 'extreme stiletto', desc: 'an extreme stiletto heel — very thin, 14cm tall' },
+        };
+        const heelTerm = heelTerminology[selectedHeel?.id] || { term: 'heel', desc: selectedHeel?.label + ' heel' };
+        // Only use kitten heel terminology if original shoe has a stiletto/thin heel
+        // Block heels, wedges etc should stay as their original type, just shorter
+        // Classify heel type using PIXEL MEASUREMENT (more reliable than Claude's text)
+        // Heel width ratio: <8% = stiletto, 8-15% = medium, >15% = block
+        const pixelHeelType = originalHeelMeasurement?.heelType || 'unknown';
+        const isBlock = pixelHeelType === 'block';
+        const isWedge = claudeHeelDescription && claudeHeelDescription.toLowerCase().includes('wedge'); // wedge detection still from Claude
+        const isOriginalThinHeel = pixelHeelType === 'stiletto' || pixelHeelType === 'medium' || pixelHeelType === 'unknown';
+        
+        if (pixelHeelType !== 'unknown') {
+          console.log(`👠 Heel type (pixel-based): ${pixelHeelType} (width ratio: ${(originalHeelMeasurement?.heelWidthRatio * 100).toFixed(1)}%)`);
+          if (claudeHeelDescription && claudeHeelDescription.toLowerCase().includes('block') && pixelHeelType === 'stiletto') {
+            console.log('⚠️ Claude said "block" but pixel measurement says stiletto — using pixel classification');
+          }
+        }
+        const isKittenHeel = heelTerm.term === 'kitten heel' && isOriginalThinHeel;
+        
+        // If original is block/wedge and target is low, use appropriate terminology
+        const effectiveHeelTerm = isKittenHeel 
+          ? heelTerm 
+          : isBlock 
+            ? { term: 'low block heel', desc: `a low block heel, ${selectedHeel.label} tall — same thickness as the original, just shorter` }
+            : isWedge
+              ? { term: 'low wedge', desc: `a low wedge heel, ${selectedHeel.label} tall — same style as the original, just shorter` }
+              : heelTerm;
+
         const buildOpenAIPrompt = (correction, heelLabel) => {
           const useLabel = heelLabel || currentHeelLabel;
           
-          // Detect if original is stiletto from Claude's analysis
-          const isStiletto = claudeHeelDescription && claudeHeelDescription.toLowerCase().includes('stiletto');
-          
-          // Different instructions for flat→heeled vs heeled→heeled
+          // Different instructions based on heel type and target height
           const heelShapeInstructions = originalIsFlat
-            ? `ADD a slim, elegant STILETTO heel approximately ${useLabel} tall.
+            ? `ADD ${effectiveHeelTerm.desc} to this flat shoe.
 The heel must be:
-- THIN stiletto style (8-12mm width) — NOT a block heel, NOT chunky
+- THIN (8-12mm width) — NOT a block heel, NOT chunky
 - Straight vertical profile with slight taper
-- The heel-to-sole connection must be a sharp, angular join — no curved fillet
-- Clean, narrow attachment to the sole
-- Elegant and refined, matching high-end luxury shoe aesthetics${claudeHeelDescription ? '\n\nOriginal shoe analysis: ' + claudeHeelDescription + '\nNote: original is flat — ADD a stiletto heel.' : ''}`
+- Sharp angular heel-to-sole connection — no curved fillet
+- Elegant and refined, matching luxury shoe aesthetics`
+            : isKittenHeel
+            ? `Change this shoe's heel to ${effectiveHeelTerm.desc}.
+A kitten heel is a SHORT THIN heel — like a mini stiletto:
+- THIN (8-12mm width) — same thinness as a stiletto, just shorter
+- Straight and vertical — no curves, no spool shape
+- Sharp angular junction where heel meets sole
+- The heel must be NOTICEABLY SHORTER than the original — only ${selectedHeel.label} tall
+- Think of an elegant low court shoe heel
+Do NOT make it a block heel or chunky. A kitten heel is pencil-thin but short.`
             : isStiletto
-            ? `CRITICAL — preserve the STILETTO heel shape from this shoe:
-- Keep it THIN (8-12mm width) — this is a stiletto, NOT a block or chunky heel
-- Keep the same straight vertical angle — no curved or swooping heel
-- The heel-to-sole connection must remain a sharp, angular join — no curved fillet or spool shape
-- Keep the same heel thickness — do NOT make it thicker
-- The ONLY thing that changes is the heel LENGTH (height)`
-            : `CRITICAL — the heel in your output must look like a SHORTER/TALLER version of the original:
-- COPY the exact heel TYPE (if block → block, if stiletto → stiletto, if wedge → wedge)
-- COPY the exact heel WIDTH and THICKNESS — do not make it thinner or thicker
-- COPY the exact heel PROFILE (straight, curved, tapered)
-- COPY the exact sole-to-heel junction style
-- The ONLY thing that changes is the heel LENGTH (height)`;
+            ? `Preserve the STILETTO heel shape — only change the height:
+- THIN (8-12mm) pencil-thin stiletto — NOT thick, NOT chunky
+- Perfectly STRAIGHT and VERTICAL — no curves, no spool shape
+- Sharp angular heel-to-sole junction — no curved fillet
+- Like a thin metal pin going straight down from the sole
+- ONLY change the heel LENGTH`
+            : `Preserve the heel shape — only change the height:
+- COPY the exact heel TYPE (block stays block, wedge stays wedge)
+- COPY the exact heel WIDTH and THICKNESS
+- COPY the exact heel PROFILE and sole junction
+- ONLY change the heel LENGTH`;
 
           let prompt = heelRefB64 
             ? `IMAGE 1 is the shoe to edit. IMAGE 2 is a REAL ${selectedHeel.label} shoe — match its heel height.
@@ -2181,7 +2386,9 @@ PRESERVE from IMAGE 1: toe shape, back style, straps, buckle, ${isOriginalColor 
 CHANGE: heel height.${!isOriginalColor ? '\n\nALSO CHANGE COLOR to: ' + selectedColor.desc + ' (hex: ' + selectedColor.hex + ').' : ''}${!isOriginalMaterial ? '\nALSO CHANGE MATERIAL to: ' + selectedMaterial.texture + '.' : ''}
 
 Professional e-commerce product photo, off-white background, photorealistic.`
-            : `${originalIsFlat ? 'Add a heel to this flat shoe.' : 'Edit this shoe to have a ' + useLabel + ' heel height.'}
+            : (originalIsFlat 
+              ? `Add ${effectiveHeelTerm.desc} to this flat shoe.`
+              : `This shoe currently has an ${originalHeelCm} cm heel. Change it to ${effectiveHeelTerm.desc}. ${isKittenHeel ? 'A kitten heel is a short thin heel — like a mini stiletto.' : ''} The heel must be SIGNIFICANTLY SHORTER than the input image — about ${Math.round(targetHeelCm/originalHeelCm*100)}% of its current length.`) + `
 
 ${heelShapeInstructions}
 
@@ -2194,93 +2401,139 @@ Professional e-commerce product photo, off-white background, photorealistic.`;
           return prompt;
         };
 
-        // Generation with validation loop (max 3 attempts)
-        const MAX_ATTEMPTS = 3;
+        console.log('🔵 OpenAI gpt-image-1.5 (height+shape, max 3) → Claude(check)');
+        
+        let totalCalls = 0;
         let generatedImage = null;
-        let bestCandidate = null;
-        let bestCandidateScore = Infinity;
-        let lastCorrection = '';
+        let bestImage = null;
+        let bestHeelError = Infinity;
+        let currentImage = { b64: rawB64, mime: mime };
+        var lastFeedback = '';
         
-        console.log('🔵 Using OpenAI GPT-5.2, calibrated heel:', calibratedHeelLabel, 'with', openaiImages.length, 'images');
-        
-        for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-          if (attempt > 1) {
-            const friendlyMessages = [
-              'Perfecționăm designul... ✨',
-              'Aproape gata, mai adăugăm câteva detalii... 👠',
-              'Ultimele retușuri... 💫'
-            ];
-            setResultState(type, 'loading', { progress: friendlyMessages[attempt - 1] || 'Mai avem puțin...' });
+        async function getHeelCm(imgB64) {
+          const m = await measureHeelPixels(imgB64);
+          if (m && originalHeelMeasurement && originalHeelMeasurement.heelRatio > 0.01) {
+            const rel = m.heelRatio / originalHeelMeasurement.heelRatio;
+            return { cm: parseFloat((rel * originalHeelCm).toFixed(1)), ratio: m.heelRatio, relRatio: rel };
           }
-          
-          let resultImage = null;
-          
-          try {
-            const openaiPrompt = buildOpenAIPrompt(lastCorrection);
-            console.log(`Attempt ${attempt} prompt:`, openaiPrompt.substring(0, 150) + '...');
-            resultImage = await callOpenAIImageEdit(openaiImages, openaiPrompt);
-          } catch (e) {
-            console.error(`OpenAI attempt ${attempt} failed:`, e.message);
-            if (attempt === MAX_ATTEMPTS && bestCandidate) break;
-            if (attempt === MAX_ATTEMPTS) throw e;
-            continue;
-          }
-          
-          if (!resultImage) {
-            if (attempt === MAX_ATTEMPTS && bestCandidate) break;
-            if (attempt === MAX_ATTEMPTS) throw new Error('No image generated');
-            continue;
-          }
-          
-          // Validate if heel changed — SHAPE ONLY (height is approximate by design)
-          if (!isOriginalHeel) {
-            setResultState(type, 'loading', { progress: 'Verificăm fiecare detaliu... 🔍' });
-            
-            const measurement = await measureShoeHWRatio(resultImage);
-            const targetData = TARGET_HW_RATIOS[selectedHeel.id];
-            const score = targetData ? Math.abs(measurement.ratio - targetData.target) : 1;
-            
-            if (score < bestCandidateScore) {
-              bestCandidate = resultImage;
-              bestCandidateScore = score;
-            }
-            
-            // Log height info but don't fail on it
-            if (targetData) {
-              const estimatedCm = ((measurement.ratio - 0.30) / 0.030).toFixed(1);
-              console.log(`Height check (info only): H/W=${measurement.ratio.toFixed(3)}, ~${estimatedCm}cm (target ${selectedHeel.label})`);
-            }
-            
-            // Only validate SHAPE via Claude
-            const validation = await validateShapeOnly(resultImage, rawB64, mime);
-            
-            if (validation.passed) {
-              console.log(`Attempt ${attempt}: PASSED shape validation`);
-              generatedImage = resultImage;
-              break;
-            } else {
-              console.log(`Attempt ${attempt}: FAILED - ${validation.reason}`);
-              
-              // Build correction for next attempt — shape only
-              if (attempt < MAX_ATTEMPTS) {
-                const failReason = validation.reason.replace('FAIL shape - ', '').replace('FAIL - ', '');
-                lastCorrection = `⚠️ SHAPE ERROR: ${failReason}. 
-Look at the original shoe carefully — your output heel must be the SAME TYPE and THICKNESS. 
-If the original has a thin stiletto, make a THIN stiletto (8-12mm). Do NOT make it thicker or chunkier.
-COPY the heel form exactly — only change the height.`;
-                console.log(`Correction for attempt ${attempt + 1}: ${lastCorrection}`);
-              }
-            }
-          } else {
-            generatedImage = resultImage;
-            break;
-          }
+          return null;
         }
         
-        // Use best candidate if no attempt fully passed
-        if (!generatedImage && bestCandidate) {
-          console.log(`No attempt passed. Using best candidate (score: ${bestCandidateScore.toFixed(3)})`);
-          generatedImage = bestCandidate;
+        // ═══ OpenAI-only loop: max 3 attempts ═══
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          const msgs = ['Creăm pantofii tăi... 👠', 'Ajustăm detaliile... ✨', 'Ultimele retușuri... 💫'];
+          setResultState(type, 'loading', { progress: msgs[attempt - 1] });
+          
+          let prompt;
+          if (attempt === 1) {
+            const colorNote = !isOriginalColor ? ` Change color to ${selectedColor.desc}.` : '';
+            const materialNote = !isOriginalMaterial ? ` Change material to ${selectedMaterial.texture}.` : '';
+            
+            prompt = originalIsFlat
+              ? `Add a THIN STILETTO heel to this flat shoe. The heel should be ${selectedHeel.label} tall.
+
+STRICT RULES:
+- The heel must be a THIN STILETTO — pencil-thin, 8-12mm diameter, like a metal pin
+- STRAIGHT and VERTICAL — absolutely NO curves, NO block, NO chunky
+- Sharp ANGULAR junction where heel meets sole — NO rounded fillet
+- Keep the EXACT same shoe upper, toe shape, ornament, buckle — change NOTHING except adding the heel
+${colorNote}${materialNote}
+Professional e-commerce product photo, white background, photorealistic.`
+              : `Edit this shoe photo. ONLY change the heel height — make it MUCH shorter.
+The current heel is tall. Reduce it to about ONE-THIRD of its current height.
+
+STRICT RULES:
+- The heel must be STRAIGHT and VERTICAL — absolutely NO curves, NO spool shape, NO hourglass
+- The heel-to-sole junction must be a SHARP ANGULAR corner — NO rounded fillet, NO curved transition
+- Keep the EXACT same heel thickness/width — do NOT make it thinner or thicker
+- Keep the EXACT same shoe upper, toe shape, straps, ornament, buckle — change NOTHING except heel height
+- The shoe must look like the SAME product, just with a shorter heel
+
+Target: ${effectiveHeelTerm.desc}.${colorNote}${materialNote}
+Professional e-commerce product photo, white background, photorealistic.`;
+          } else {
+            prompt = lastFeedback;
+          }
+          
+          console.log(`\n--- OpenAI attempt ${attempt}/3 ---`);
+          console.log(`Prompt:`, prompt.substring(0, 150));
+          
+          let result = null;
+          try {
+            result = await callOpenAIImageEdit(
+              [currentImage], prompt, '1024x1024', 'low',
+              { model: 'gpt-5.2', action: 'edit' }
+            );
+            totalCalls++;
+          } catch (e) {
+            console.log(`OpenAI failed:`, e.message);
+            // Fallback: try with Gemini
+            try {
+              console.log('Falling back to Gemini...');
+              const parts = [
+                { inlineData: { mimeType: currentImage.mime, data: currentImage.b64 } },
+                { text: prompt }
+              ];
+              result = await callGeminiImageGen(parts);
+              totalCalls++;
+            } catch (e2) {
+              console.log('Gemini fallback also failed:', e2.message);
+              continue;
+            }
+          }
+          
+          if (!result) { console.log('No image generated'); continue; }
+          console.log(`Generated: ${Math.round(result.length/1024)} KB`);
+          
+          // Claude checks
+          setResultState(type, 'loading', { progress: 'Verificăm... 🔍' });
+          const heelData = await getHeelCm(result);
+          const heelCm = heelData?.cm;
+          const heightError = heelCm ? Math.abs(heelCm - targetHeelCm) / targetHeelCm : 1;
+          const heightOk = heightError < 0.10; // Tight: ±10% (6.5cm target = 5.85-7.15cm)
+          
+          console.log(`📏 Result: ~${heelCm || '?'}cm (target ${selectedHeel.label}), error: ${(heightError*100).toFixed(0)}% ${heightOk ? '✅' : '❌'}`);
+          
+          if (heightError < bestHeelError) {
+            bestImage = result;
+            bestHeelError = heightError;
+          }
+          
+          if (heightOk) {
+            // Check shape too
+            const shapeCheck = await validateShapeOnly(result, rawB64, mime);
+            console.log(`🎨 Shape: ${shapeCheck.passed ? '✅ PASS' : '❌ FAIL'}`);
+            
+            if (shapeCheck.passed) {
+              console.log(`🎉 APPROVED: attempt ${attempt}, ~${heelCm}cm, shape OK`);
+              generatedImage = result;
+              break;
+            }
+          }
+          
+          // Feedback for retry
+          const resultMime = result.startsWith('/9j/') ? 'image/jpeg' : 'image/png';
+          currentImage = { b64: result, mime: resultMime };
+          
+          const fraction = targetHeelCm / parseFloat(heelCm);
+          const fractionDesc = fraction <= 0.55 ? 'HALF' : fraction <= 0.75 ? 'two-thirds' : 'shorter';
+          
+          lastFeedback = `The heel is still too tall. Cut it to ${fractionDesc} of its current height.
+
+STRICT RULES:
+- Heel must be STRAIGHT and VERTICAL — NO curves, NO spool, NO hourglass shape
+- Sharp ANGULAR junction where heel meets sole — NO rounded fillet
+- Keep EXACT same heel thickness — do NOT change width
+- Keep EXACT same shoe upper, toe, straps, ornament — change NOTHING except heel height
+
+Target: ${effectiveHeelTerm.desc}.
+Professional product photo, white background.`;
+          console.log(`🔄 Retry: ${lastFeedback.substring(0, 100)}`);
+        }
+        
+        if (!generatedImage) {
+          generatedImage = bestImage || rawB64;
+          console.log(`⚠️ Using best result (error: ${(bestHeelError*100).toFixed(0)}%)`);
         }
         
         if (generatedImage) {
