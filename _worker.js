@@ -22,6 +22,11 @@ export default {
       return handleValidateUrl(url);
     }
     
+    // Visualize shoe in color/occasion context (for Gina chatbot integration)
+    if (url.pathname === '/api/visualize') {
+      return handleVisualize(request, env);
+    }
+    
     // For all other requests, serve static assets
     return env.ASSETS.fetch(request);
   },
@@ -177,13 +182,14 @@ async function handleOpenAIImageRequest(request, env) {
       input.push({ role: 'user', content: contentParts });
       
       const responsesBody = {
-        model: 'gpt-5.2',
+        model: body.model || 'gpt-5.2',
         input: input,
         tools: [{ 
           type: 'image_generation',
           quality: body.quality || 'high',
           size: body.size || '1024x1024',
-          input_fidelity: 'high'
+          input_fidelity: body.input_fidelity || 'high',
+          ...(body.action ? { action: body.action } : {})
         }]
       };
       
@@ -269,5 +275,153 @@ async function handleOpenAIImageRequest(request, env) {
       JSON.stringify({ error: err.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
+  }
+}
+
+
+// ── Gina Chatbot Integration: Shoe Visualizer ────────────────────────────────
+// Accepts a shoe image URL + color + occasion, generates a styled image
+// This function is self-contained and does not affect any existing functionality
+
+async function handleVisualize(request, env) {
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
+
+  if (request.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  if (request.method !== 'POST') {
+    return new Response('Method not allowed', { status: 405, headers: corsHeaders });
+  }
+
+  try {
+    const { imageUrl, color, occasion, productName } = await request.json();
+
+    if (!imageUrl) {
+      return new Response(JSON.stringify({ error: 'imageUrl is required' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const apiKey = env.OPENAI_API_KEY;
+    if (!apiKey) {
+      return new Response(JSON.stringify({ error: 'OPENAI_API_KEY not configured' }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Fetch the shoe image from CDN and convert to base64
+    console.log('Visualize: fetching shoe image from', imageUrl);
+    const imgResp = await fetch(imageUrl);
+    if (!imgResp.ok) {
+      return new Response(JSON.stringify({ error: 'Could not fetch shoe image' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    const imgBuffer = await imgResp.arrayBuffer();
+    const uint8 = new Uint8Array(imgBuffer);
+    let binary = '';
+    for (let i = 0; i < uint8.length; i++) binary += String.fromCharCode(uint8[i]);
+    const b64 = btoa(binary);
+    const mime = imgResp.headers.get('content-type') || 'image/jpeg';
+
+    // Occasion-aware scene context
+    const occasionScenes = {
+      'nunta':     'elegant bridal scene, flowing white wedding dress, soft romantic natural light, garden or cathedral setting, warm golden hour',
+      'mireasa':   'elegant bridal scene, flowing white wedding dress, soft romantic natural light, garden or cathedral setting, warm golden hour',
+      'eveniment': 'elegant evening event, sophisticated cocktail dress, warm ambient indoor lighting, upscale venue',
+      'zi de zi':  'chic casual street style, simple dress or tailored trousers, natural daylight, European city street',
+      'birou':     'professional office setting, tailored blazer and trousers, clean modern workspace',
+      'vacanta':   'relaxed outdoor summer setting, light sundress, natural warm light, coastal or city',
+      'petrecere': 'festive party atmosphere, elegant evening dress, dramatic lighting, upscale interior',
+    };
+
+    const scene = occasionScenes[occasion] || 'elegant fashion photography setting, neutral studio background';
+    const colorName = color || 'original color';
+    const productLabel = productName ? `"${productName}"` : 'these luxury shoes';
+
+    const prompt = `This is a product photo of ${productLabel} from Ginissima, a Romanian luxury handcrafted shoe brand. ` +
+      `Generate a high-end fashion photograph showing these exact shoes in ${colorName}. ` +
+      `Scene: ${scene}. ` +
+      `Requirements: keep the exact shoe silhouette, style and heel height unchanged. ` +
+      `Show the shoes being worn or elegantly posed. ` +
+      `Professional luxury fashion photography, sharp detail on the shoes.`;
+
+    console.log('Visualize: generating image for', productName, '| color:', colorName, '| occasion:', occasion);
+
+    // Call OpenAI Responses API (same pipeline as ShoeStudio)
+    const openaiBody = {
+      model: 'gpt-image-1',
+      input: [{
+        role: 'user',
+        content: [
+          {
+            type: 'input_image',
+            image_url: `data:${mime};base64,${b64}`
+          },
+          {
+            type: 'input_text',
+            text: prompt
+          }
+        ]
+      }],
+      tools: [{
+        type: 'image_generation',
+        quality: 'high',
+        size: '1024x1024',
+        input_fidelity: 'high'
+      }]
+    };
+
+    const openaiResp = await fetch('https://api.openai.com/v1/responses', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(openaiBody)
+    });
+
+    const respText = await openaiResp.text();
+
+    if (!openaiResp.ok) {
+      console.error('Visualize: OpenAI error', openaiResp.status, respText.substring(0, 200));
+      return new Response(JSON.stringify({ error: 'Image generation failed', detail: respText.substring(0, 200) }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const result = JSON.parse(respText);
+    let imageB64 = null;
+    if (result.output) {
+      for (const item of result.output) {
+        if (item.type === 'image_generation_call' && item.result) {
+          imageB64 = item.result;
+          break;
+        }
+      }
+    }
+
+    if (!imageB64) {
+      console.error('Visualize: no image in response', respText.substring(0, 300));
+      return new Response(JSON.stringify({ error: 'No image generated' }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    console.log('Visualize: success for', productName);
+    return new Response(JSON.stringify({ b64: imageB64, mime: 'image/jpeg' }), {
+      status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+
+  } catch (err) {
+    console.error('Visualize error:', err.message);
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
   }
 }
